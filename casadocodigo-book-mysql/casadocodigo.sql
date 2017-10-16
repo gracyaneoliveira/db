@@ -22,6 +22,9 @@ mysql> GRANT ALL PRIVILEGES ON *.* TO usermysql@'localhost' WITH GRANT OPTION;
 -- Porém, se quiséssemos revogá-lo, faríamos da seguinte maneira:
 mysql> revoke all on *.* from usermysql;
 
+-- Concedendo privilegios a somente um banco de dados:
+GRANT ALL PRIVILEGES ON comercial.* to usermysql@localhost;
+
 -- Visualizar todos os usuários do banco;
 SELECT Host,User,Password FROM mysql.user;
 
@@ -33,3 +36,138 @@ SHOW DATABASES;
 
 
 -- continue capitulo 3 [pag. 37]
+
+-- CRIANDO AS TABELAS DO PROJETO
+
+CREATE TABLE comclien(
+	n_numeclien int NOT null AUTO_INCREMENT,
+	c_codiclien varchar(10),
+	c_nomeclien varchar(100),
+	c_razaclien varchar(100),
+	d_dataclien date,
+	c_cnpjclien varchar(20),
+	c_foneclien varchar(20),
+	PRIMARY KEY (n_numeclien)
+);
+
+-- Por padrão, o auto_increment inicia-se do 1. 
+-- Porém, se houver a necessidade de iniciar por outro valor você pode alterá-lo, fazendo:
+mysql > ALTER TABLE comclien AUTO_INCREMENT=100;
+
+CREATE TABLE comforne(
+    n_numeforne int NOT null AUTO_INCREMENT,
+    c_codiforne varchar(10),
+    c_nomeforne varchar(100),
+    c_razaforne varchar(100),
+    c_foneforne varchar(20),
+    PRIMARY KEY(n_numeforne)
+);
+
+CREATE TABLE comvende(
+    n_numevende int NOT null AUTO_INCREMENT,
+    c_codivende varchar(10),
+    c_nomevende varchar(100),
+    c_razavende varchar(100),
+    c_fonevende varchar(20),
+    n_porcvende float(10,2),
+    PRIMARY KEY(n_numevende)
+);
+
+CREATE TABLE comprodu(
+    n_numeprodu int NOT null AUTO_INCREMENT,
+    c_codiprodu varchar(20),
+    c_descprodu varchar(100),
+    n_valoprodu float(10,2),
+    c_situprodu varchar(1),
+    n_numeforne int,
+    PRIMARY KEY(n_numeprodu)
+);
+
+CREATE TABLE comvenda(
+    n_numevenda int NOT null AUTO_INCREMENT,
+    c_codivenda varchar(10),
+    n_numeclien int NOT null,
+    n_numeforne int NOT null,
+    n_numevende int NOT null,
+    n_valovenda float(10,2),
+    n_descvenda float(10,2),
+    n_totavenda float(10,2),
+    d_datavenda date,
+    PRIMARY KEY(n_numevenda)
+);
+
+CREATE TABLE comivenda(
+    n_numeivenda int NOT null AUTO_INCREMENT,
+    n_numevenda int NOT null,
+    n_numeprodu int NOT null,
+    n_valoivenda float(10,2),
+    n_qtdeivenda int,
+    n_descivenda float(10,2),
+    PRIMARY KEY(n_numeivenda)
+);
+
+-- CUIDANDO DA INTEGRIDADE DO BANCO DE DADOS
+
+-- Quando criamos a tabela comvenda , nós incluímos colunas de outras tabelas, como:
+-- n_numeclien , n_numeforne e n_numeprodu. 
+-- Essas colunas estão referenciando um registro em sua tabela de origem. 
+-- Porém, como apenas criamos o campo, mas nada que informe o banco sobre essa referência, 
+-- devemos fazer isso, passando uma instrução ao nosso SGBD por meio das constraints , 
+-- como mostram os códigos na sequência.
+
+ALTER TABLE comvenda ADD CONSTRAINT fk_comvenda_comforne
+    foreign key(n_numeforne)
+    references comforne(n_numeforne)
+on delete no action
+on update no action;
+
+ALTER TABLE comvenda ADD CONSTRAINT fk_comvenda_comvende
+    foreign key(n_numevende)
+    references comvende(n_numevende)
+on delete no action
+on update no action;
+
+ALTER TABLE comvenda ADD CONSTRAINT fk_comvenda_comclien
+    foreign key(n_numeclien)
+    references comclien(n_numeclien)
+on delete no action
+on update no action;
+
+ALTER TABLE comivenda ADD CONSTRAINT fk_comivenda_comprodu
+    foreign key(n_numeprodu)
+    references comprodu(n_numeprodu)
+on delete no action
+on update no action;
+
+ALTER TABLE comivenda ADD CONSTRAINT fk_comivenda_comvenda
+    foreign key(n_numevenda)
+    references comvenda(n_numevenda)
+on delete no action
+on update no action;
+
+-- Se tivéssemos criado uma constraint errada, poderíamos
+-- deletá-la utilizando a instrução irreversível:
+ALTER TABLE comivenda drop foreign key fk_comivenda_comprodu;
+
+-- ALTERANDO AS TABELAS
+
+-- Se você reparar em nossa tabela de clientes, não criamos campos para cidade ou para estados. 
+-- Para não precisar excluí-la e criá-la novamente, fazemos uma alteração nela com o comando alter table
+ALTER TABLE comclien add column c_cidaclien varchar(50);
+
+-- E um campo para informar o estado.
+ALTER TABLE comclien add column c_estaclien varchar(50);
+
+-- DELETAR COLUNA
+ALTER TABLE comclien drop column c_estaclien;
+
+-- MODIFICAR TIPO DO CAMPO (usar o modify)
+ALTER TABLE comclien modify column c_estaclien int;
+ALTER TABLE comclien modify column c_estaclien varchar(100);
+
+-- DELETAR TABELAS
+drop table comvendas;
+
+-- continua [pag. 46]
+
+-- CAPITULO 4 MANIPULANDO REGISTROS
