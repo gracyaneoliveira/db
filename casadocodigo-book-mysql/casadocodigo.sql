@@ -23,7 +23,10 @@ mysql> GRANT ALL PRIVILEGES ON *.* TO usermysql@'localhost' WITH GRANT OPTION;
 mysql> revoke all on *.* from usermysql;
 
 -- Concedendo privilegios a somente um banco de dados:
-GRANT ALL PRIVILEGES ON comercial.* to usermysql@localhost;
+GRANT ALL PRIVILEGES ON comercial.* to 'usermysql'@'localhost';
+
+-- Criando um usuário e dando permissão
+GRANT ALL PRIVILEGES ON comercial.* TO 'usermysql'@'localhost' identified by 'cursomysql';
 
 -- Visualizar todos os usuários do banco;
 SELECT Host,User,Password FROM mysql.user;
@@ -44,7 +47,7 @@ CREATE TABLE comclien(
 	c_codiclien varchar(10),
 	c_nomeclien varchar(100),
 	c_razaclien varchar(100),
-	d_dataclien date,
+	d_dataclien datetime,
 	c_cnpjclien varchar(20),
 	c_foneclien varchar(20),
 	PRIMARY KEY (n_numeclien)
@@ -171,3 +174,91 @@ drop table comvendas;
 -- continua [pag. 46]
 
 -- CAPITULO 4 MANIPULANDO REGISTROS
+
+-- INSERINDO REGISTROS
+INSERT INTO comclien VALUES (
+1,
+'0001',
+'AARONSON',
+'AARONSON FURNITURE LTDA',
+'2015-02-17',
+'17.807.928/0001-85',
+'(21) 8167-6584',
+'QUEIMADOS',
+'RJ');
+
+insert into comclien(n_numeclien,
+                    c_codiclien,
+                    c_nomeclien,
+                    c_razaclien,
+                    d_dataclien,
+                    c_cnpjclien,
+                    c_foneclien,
+                    c_cidaclien,
+                    c_estaclien)
+values (1,
+        '0001',
+        'AARONSON',
+        'AARONSON FURNITURE LTDA',
+        '2015-02-17',
+        '17.807.928/0001-85',
+        '(21) 8167-6584',
+        'QUEIMADOS',
+        'RJ');
+        
+-- ALTERANDO REGISTROS : COMMAND UPDATE
+UPDATE comclien SET c_nomeclien = 'AARONSON FURNITURE' WHERE n_numeclien = 1;
+
+-- Podemos atualizar mais de um campo de uma vez só, separando com ',' :
+mysql > UPDATE comclien SET 
+            c_nomeclien = 'AARONSON FURNITURE', 
+            c_cidaclien = 'LONDRINA', 
+            c_estaclien = 'PR'
+        WHERE n_numeclien = 1;
+
+mysql > commit;
+
+-- Utilizei o commit para dizer para o SGBD que ele pode realmente 
+-- salvar a alteração do registro. Se, por engano, fizermos o update 
+-- incorreto, antes do commit , podemos reverter a situação usando a 
+-- instrução SQL rollback , da seguinte maneira:
+mysql > UPDATE comclien SET c_nomeclien = 'AARONSON'
+        WHERE n_numeclien = 1;
+mysql > rollback;
+
+-- Com isso, o nosso SGBD vai reverter a última instrução.
+
+-- Porém, se tiver a intenção de utilizar o rollback , faça-o antes de
+-- aplicar o commit , pois se você aplicar o update ou qualquer
+-- outro comando que necessite do commit , não será possível
+-- reverter.
+
+-- EXCLUINDO REGISTROS
+-- Para isso, devemos utilizar uma outra instrução SQL: o delete . 
+-- Diferente do drop , ele deleta os registros das colunas do banco de dados. 
+-- O drop é usado para excluir objetos do banco, como tabelas, colunas, views, procedures etc.); 
+-- enquanto, o delete deletará os registros das tabelas, podendo excluir apenas
+-- uma linha ou todos os registros, como você desejar.
+
+mysql > DELETE FROM comclien WHERE n_numeclien = 1;
+mysql > commit;
+
+-- Deletar todos os registros da tabela de clientes.
+mysql > DELETE FROM comclien;
+mysql > commit;
+
+-- CLAUSULA : TRUNCATE
+-- Além do delete , podemos fazer a deleção de dados usando
+-- uma instrução SQL chamada de truncate . 
+-- Este é um comando que não necessita de commit e não é possível a utilização de cláusulas where . 
+-- Logo, só o use se você tem certeza do que estiver querendo excluir, uma vez que ele é irreversível. 
+-- Nem o rollback pode reverter a operação. Isso ocorre porque, quando você utiliza o delete , 
+-- o SGBD salva os seus dados em uma tabela temporária e, quando aplicamos o rollback , 
+-- ele retorna a consulta e restaura os dados. 
+-- Já o truncate não a utiliza, o SGBD faz a deleção direta. 
+-- Para usar esse comando, faça do seguinte modo:
+mysql> truncate table comclien;
+
+-- continue [pag. 53]
+
+-- CAPITULO 5 TEMOS REGISTROS: VAMOS CONSULTAR?
