@@ -470,3 +470,106 @@ WHERE n_numeclien NOT IN (1,2,3,4);
 -- 5.3 TRAGA INFORMAÇÃO DE VÁRIAS TABELAS COM JOINS
 
 -- continue [pag. 65]
+
+-- Para fazer um consulta em mais de uma tabela, nós utilizamos os
+-- chamados JOINs.
+-- No SQL, também temos um comando para ordenar as consultas.
+-- Para isso, temos o order by . Ordenando pela razão social do
+-- cliente, o nosso código ficará da seguinte maneira:
+SELECT c_codiclien, c_razaclien, c_codivenda Cod_Venda
+    FROM comvenda, comclien  -- join entre comvenda e comclien
+WHERE comvenda.n_numeclien = comclien.n_numeclien
+    ORDER BY c_razaclien;
+    
+-- A maneira mais formal de escrever uma consulta com JOIN
+-- é como está apresentado a seguir. Porém, não é a mais
+-- comum e utilizada no dia a dia, pois o código fica um pouco
+-- mais complexo.
+SELECT c_codiclien, c_razaclien, c_codivenda Cod_Venda
+    FROM comvenda
+        JOIN comclien 
+    ON comvenda.n_numeclien = comclien.n_numeclien
+ORDER BY c_razaclien;
+
+-- 5.4 SELECT EM: CREATE TABLE, INSERT, UPDATE E DELETE
+-- Criando tabelas por meio de select
+
+-- Surgiu a necessidade de criarmos uma tabela chamada
+-- comclien_bkp com a mesma estrutura e dados da comclien ,
+-- onde o c_estaclien seja igual a 'SP' . Podemos realizar
+-- algumas operações com esses registros e, por segurança, não
+-- usaremos os dados da tabela original.
+CREATE TABLE comclien_bkp AS( SELECT *
+                                FROM comclien
+                              WHERE c_estaclien = 'SP');
+
+-- Inserindo registros por meio de select
+-- Constantemente, surge a necessidade de inserir registros em
+-- alguma tabela, a fim de realizar algum processo no banco de dados.
+-- Às vezes, já temos esses dados em outra tabela e, com isso, em vez
+-- de criarmos scripts para inseri-los, nós podemos utilizar um
+-- select para buscar o que temos e colocar em nossa nova tabela.
+
+-- Em nosso projeto, apareceu a necessidade da criação uma
+-- tabela para agenda telefônica. Ela terá como base alguns campos da
+-- tabela de clientes e todos eles serão cadastrados nela também.
+CREATE TABLE comcontato(
+    n_numecontato int NOT null AUTO_INCREMENT,
+    c_nomecontato varchar(200),
+    c_fonecontato varchar(30),
+    c_cidacontato varchar(200),
+    c_estacontato varchar(2),
+    n_numeclien int,
+    PRIMARY KEY(n_numecontato)
+);
+Query OK, 0 rows affected (2.07 sec)
+
+-- Agora vamos popular as colunas da nossa tabela comcontato
+-- com essas informações que temos da tabela comclien .
+INSERT INTO comcontato(
+    SELECT n_numeclien,
+        c_nomeclien,
+        c_foneclien,
+        c_cidaclien,
+        c_estaclien,
+        n_numeclien
+    FROM comclien
+);
+Query OK, 10 rows affected (0.16 sec)
+Records: 10 Duplicates: 0 Warnings: 0
+
+-- Para visualizar os registros da nossa tabela, faça um select simples para listá-los.
+mysql > SELECT * FROM comcontato;
+
+-- Alterando registros por meio de select
+
+-- Neste momento, descobrimos que os contatos dos cliente que
+-- estão na tabela comclien_bkp , na verdade, possuem o contato
+-- em outra cidade e estado, diferente dos dados que estão na comclien . 
+-- Ainda utilizando um select , faremos um update
+-- nos campos c_cidacontato e c_estacontato , buscando os registros 
+-- da tabela comclien_bkp e alterando a comcontato .
+
+UPDATE comcontato SET c_cidacontato = 'LONDRINA', c_estacontato = 'PR'
+    WHERE n_numeclien IN (SELECT n_numeclien
+                            FROM comclien_bkp);
+                            
+Query OK, 3 rows affected (0.31 sec)
+Rows matched: 3 Changed: 3 Warnings: 0
+
+-- Deletando registros por meio de select
+
+-- Agora temos a necessidade de deletar todos os registros da tabela
+-- comcontato que não possuem registros na tabela
+-- comvenda ; ou seja, aqueles que não possuem nenhuma venda.
+DELETE FROM comcontato
+    WHERE n_numeclien NOT IN (SELECT n_numeclien
+                                FROM comvenda);
+Query OK, 1 rows affected (0.09 sec)
+
+-- Agora, se consultarmos a tabela comcontato , não veremos o
+-- contato que não possuía nenhum registro na comvenda .
+
+-- continue [pag.75]
+
+-- CAPÍTULO 6 CONSULTAS COM FUNÇÕES
