@@ -573,3 +573,331 @@ Query OK, 1 rows affected (0.09 sec)
 -- continue [pag.75]
 
 -- CAPÍTULO 6 CONSULTAS COM FUNÇÕES
+
+-- 6.1 FUNÇÕES
+
+-- Elas estão divididas nos seguintes tipos: numéricas, lógica, manipulação de string e
+-- funções de data e hora.
+
+-- 6.2 FUNÇÕES DE AGREGAÇÃO
+
+-- As funções de agregação são responsáveis por agrupar vários
+-- valores e retornar somente um único para um determinado grupo.
+-- Por exemplo, se fizermos um select em todos registros da tabela
+-- de vendas com join com a tabela de clientes, vamos ter como
+-- resultado clientes repetidos.
+
++-------------+------------------------+
+| c_codiclien | c_razaclien            |
++-------------+------------------------+
+| 0001        | AARONSON FURNITURE LTD |
+| 0001        | AARONSON FURNITURE LTD |
+| 0001        | AARONSON FURNITURE LTD |
+| 0009        | AUTO WORKS LTDA        |
+...
+
+-- Alguns clientes repetem-se, pois existem aqueles que possuem
+-- mais de uma venda. Desta maneira, poderíamos utilizar uma
+-- função de agregação para retorná-los, evitando a repetição.
+
+-- Group by
+
+-- O comando SQL para fazer essa operação de agregação é o
+-- group by . Ele deverá ser utilizado logo após as cláusulas de
+-- condições where ou and , e antes do order by , se a sua
+-- consulta possuí-lo.
+
+SELECT c_codiclien, c_razaclien
+    FROM comclien, comvenda
+WHERE comvenda.n_numeclien = comclien.n_numeclien
+    GROUP BY c_codiclien, c_razaclien
+    ORDER BY c_razaclien;
+
++-------------+------------------------+
+| c_codiclien | c_razaclien            |
++-------------+------------------------+
+| 0001        | AARONSON FURNITURE LTD |
+| 0009        | AUTO WORKS LTDA        |
+| 0004        | GREAT AMERICAN MUSIC   |
+| 0008        | HUGHES MARKETS LTDA    |
+| 0003        | KELSEY NEIGHBOURHOOD   |
+| 0005        | LIFE PLAN COUNSELLING  |
+| 0002        | LITTLER LTDA           |
+| 0006        | PRACTI-PLAN LTDA       |
+| 0007        | SPORTSWEST LTDA        |
++-------------+------------------------+
+9 rows in set (0.00 sec)
+
+-- O MySQL agrupou o código e a razão social, trazendo apenas
+-- um registro de cada. Porém, essa consulta poderia ser melhor se
+-- tivéssemos a quantidade de vendas de cliente. Podemos utilizar
+-- uma outra função de agregação chamada count() para contar os
+-- registros que estão agrupados. Ela só pode ser utilizada na cláusula
+-- select , pois contará os registros da coluna que está sendo
+-- selecionada. Complementando o código anterior, teremos:
+
+SELECT c_codiclien, c_razaclien, COUNT(n_numevenda) Qtde
+    FROM comclien, comvenda
+WHERE comvenda.n_numeclien = comclien.n_numeclien
+    GROUP BY c_codiclien, c_razaclien
+    ORDER BY c_razaclien;
+
++-------------+------------------------+------+
+| c_codiclien | c_razaclien            | Qtde |
++-------------+------------------------+------+
+| 0001        | AARONSON FURNITURE LTD | 3    |
+| 0009        | AUTO WORKS LTDA        | 3    |
+| 0004        | GREAT AMERICAN MUSIC   | 1    |
+| 0008        | HUGHES MARKETS LTDA    | 2    |
+| 0003        | KELSEY NEIGHBOURHOOD   | 3    |
+| 0005        | LIFE PLAN COUNSELLING  | 2    |
+| 0002        | LITTLER LTDA           | 2    |
+| 0006        | PRACTI-PLAN LTDA       | 2    | 
+| 0007        | SPORTSWEST LTDA        | 2    |
++-------------+------------------------+------+
+9 rows in set (0.00 sec)
+
+-- O count pode ser usado apenas para contar a quantidade de
+-- registro em uma tabela. Vamos substituir a coluna que estava entre
+-- parênteses no exemplo anterior por * (asterisco), para contar
+-- todas as linhas da tabela de clientes.
+
+select count(*) from comclien;
++----------+
+| count(*) |
++----------+
+| 10       |
++----------+
+1 row in set (0.05 sec)
+
+-- Having count()
+-- Agora, em nosso projeto, temos a necessidade de fazer um
+-- relatório que traga como resultado os clientes que tiveram mais do
+-- que duas vendas. Para isso, utilizaremos a função having count() , 
+-- que será a condição para o seu count() .
+-- Exemplificando, temos:
+
+SELECT c_razaclien, COUNT(n_numevenda)
+    FROM comclien, comvenda
+WHERE comvenda.n_numeclien = comclien.n_numeclien
+    GROUP BY c_razaclien
+HAVING COUNT(n_numevenda) > 2;
+
++------------------------+--------------------+
+| c_razaclien            | count(n_numevenda) |
++------------------------+--------------------+
+| AARONSON FURNITURE LTD | 3                  |
+| AUTO WORKS LTDA        | 3                  |
+| KELSEY NEIGHBOURHOOD   | 3                  |
++------------------------+--------------------+
+3 rows in set (0.00 sec)
+
+-- max() e min()
+
+-- Muitas vezes, por n motivos, surge a necessidade de retornar
+-- o maior ou menor registro de uma tabela.
+-- Fazemos isso com as funções MAX() e MIN() , respectivamente.
+-- Nos parênteses deverá ir a coluna que você deseja recuperar. São
+-- funções simples do SQL que são de grande utilidade.
+-- Se quisermos recuperar o valor da maior venda, nossa consulta seria:
+
+SELECT MAX(n_totavenda) maior_venda 
+    FROM comvenda;
++-------------+
+| maior_venda |
++-------------+
+| 25141.02    |
++-------------+
+1 row in set (0.00 sec)
+
+-- Já para a menor:
+SELECT min(n_totavenda) menor_venda, 
+       max(n_totavenda) maior_venda 
+FROM comvenda;
+
++-------------+-------------+
+| menor_venda | maior_venda |
++-------------+-------------+
+| 4650.64     | 25141.02    |
++-------------+-------------+
+1 row in set (0.00 sec)
+
+-- Sum()
+
+-- No MySQL, podemos somar todos os valores de uma coluna utilizando a função sum() .
+-- Como exemplo, vamos somar os valores individualmente das
+-- colunas: n_valovenda , n_descvenda e n_totavenda no intervalo de 01/01/2015 a 31/01/2015.
+SELECT SUM(n_valovenda) valor_venda,
+       SUM(n_descvenda) descontos,
+       SUM(n_totavenda) total_venda
+FROM comvenda
+      WHERE d_datavenda BETWEEN '2015-01-01' AND '2015-01-31';
+      
++-------------+-----------+-------------+
+| valor_venda | descontos | total_venda |
++-------------+-----------+-------------+
+| 75830.72    | 0.00      | 75830.72    |
++-------------+-----------+-------------+
+1 row in set (0.00 sec)
+
+-- Avg()
+-- No MySQL temos o avg(), que busca a coluna cuja média você deseja saber e realiza
+-- o cálculo. Vamos exemplificar consultando o valor médio de todas as vendas:
+SELECT format(AVG(n_totavenda),2)
+    FROM comvenda;
++----------------------------+
+| format(avg(n_totavenda),2) |
++----------------------------+
+| 12,213.96                  |
++----------------------------+
+1 row in set (0.00 sec)
+
+
+-- 6.3 FUNÇÕES DE STRING
+
+-- substr() e length()
+
+-- Agora, em nosso projeto, surgiu a necessidade de consultar os
+-- produtos que iniciam seu código com '123' e que possuem uma
+-- descrição com mais de 4 caracteres, pois foram cadastrados de
+-- maneira errada.
+-- Existem funções no SQL que podemos utilizar para
+-- fazer esse filtro? 
+-- São duas: a função SUBSTR() e a length() .
+
+-- Diferente das outras funções para as quais apenas passamos a
+-- coluna, para esta devemos também passar qual o intervalo de
+-- caracteres que queremos de um determinado campo.
+
+-- Por exemplo, substr(c_codiprodu,1,3) = '123' . 
+-- Com este comando, falamos para o SGBD que queremos os registros
+-- que possuem o código da posição 1 até a posição 3 com a
+-- sequência de caracteres 123 . 
+-- Com a função LENGTH() , vamos contar quantos caracteres a descrição do produto tem.
+
+SELECT c_codiprodu, c_descprodu
+    FROM comprodu
+WHERE substr(c_codiprodu,1,3) = '123'
+    AND length(c_descprodu) > 4;
+
++-------------+-------------+
+| c_codiprodu | c_descprodu |
++-------------+-------------+
+| 123131      | NOTEBOOK    |
+| 123223      | SMARTPHONE  |
+| 1234        | DESKTOP     |
++-------------+-------------+
+2 rows in set (0.03 sec)
+
+-- Utilizamos, no exemplo, o substr() e o length() para
+-- fazermos uma validação. Poderíamos ter utilizado para apresentar
+-- os valores. 
+-- Vamos selecionar apenas os cinco primeiros caracteres
+-- do campo c_razaclien e contar quantos deles temos no código
+-- do cliente = 1. Vamos ao código:
+SELECT substr(c_razaclien,1,5) Razao_Social,
+       length(c_codiprodu) Tamanho_Cod
+    FROM comclien
+WHERE n_numeclien = 1;
+
++-------------+--------------+
+| Razao_Social | Tamanho_Cod |
++-------------+--------------+
+| AARON        | 6           |
++-------------+--------------+
+1 rows in set (0.00 sec)
+
+-- Concat() e concat_ws()
+
+-- Queremos agora listar os clientes concatenando a razão social e o telefone. 
+-- Temos a função concat() que concatena dois ou mais campos. 
+-- Deve-se apenas colocá-los entre parênteses, separados por vírgula.
+
+SELECT concat(c_razaforne,' - fone: ', c_foneforne)
+    FROM comforne
+ORDER BY c_razaforne;
+
++-------------------------------------------------------+
+| concat(c_razaforne,' - fone: ', c_foneforne)          |
++-------------------------------------------------------+
+| DUN RITE LAWN MAINTENANCE LTDA - fone: (85) 7886-8837 |
+| SEWFRO FABRICS LTDA - fone: (91) 5171-8483            |
+| WISE SOLUTIONS LTDA - fone: (11) 5347-5838            |
++-------------------------------------------------------+
+3 rows in set (0.04 sec)
+
+-- Por alguma necessidade, precisamos fazer consultas e
+-- concatenar mais de um campo. 
+-- O MySQl nos permite fazer isso através das funções concat() e concat_ws() . 
+
+-- Com o concat() será para concatenar todos os campos da consulta sem
+-- especificar um separador entre os campos; 
+-- Com o concat_ws() devemos dizer qual será o separador entre eles. 
+-- Vamos aos exemplos:
+
+SELECT
+    concat(c_codiclien,' ',c_razaclien, ' ', c_nomeclien)
+FROM comclien
+    WHERE c_razaclien LIKE 'GREA%';
+    
++---------------------------------------------------------+
+| concat(c_codiclien,' ',c_razaclien, ' ', c_nomeclien)   |
++---------------------------------------------------------+
+| 0004 GREAT AMERICAN MUSIC GREAT AMERICAN MUSIC          |
++---------------------------------------------------------+
+1 row in set (0.00 sec)
+
+-- Olhando para o resultado, observe que nós separamos os
+-- campos com duplo espaço. 
+-- Poderíamos fazer isso utilizando algum caractere especial, como com ponto e vírgula ( ; ):
+
+SELECT
+    concat_ws(';',c_codiclien, c_razaclien, c_nomeclien)
+FROM comclien
+    WHERE c_razaclien LIKE 'GREA%';
++------------------------------------------------------+
+| concat_ws(';',c_codiclien, c_razaclien, c_nomeclien) |
++------------------------------------------------------+
+| 0004;GREAT AMERICAN MUSIC;GREAT AMERICAN MUSIC       |
++------------------------------------------------------+
+1 row in set (0.00 sec)
+
+-- Observe que agora apenas declaramos qual o separador
+-- queríamos e o SGBD colocou-o entre os campos.
+
+-- Lcase() e lower()
+-- Se você fizer uma consulta em nosso banco, vai perceber que
+-- alguns registros estão em letras maiúsculas. Se você necessitar, em
+-- algum lugar de sua aplicação, dos registros em letras minúsculas, o
+-- MySQL também tem uma função para auxiliá-lo. 
+-- Utilize o lcase ou o lower da seguinte maneira:
+
+SELECT lcase(c_razaclien)
+    FROM comclien;
+
++------------------------+
+| lcase(c_razaclien)     |
++------------------------+
+| aaronson furniture ltd |
+| auto works ltda        |
+| dahlkemper ltda        |
+...
+
+-- Ucase()
+
+-- Da mesma maneira que podemos retornar os registros de
+-- forma minúscula, podemos também de forma maiúscula. Utilize a
+-- função ucase . Vamos consultar:
+SELECT ucase('banco de dados mysql')
+    FROM DUAL;
++-------------------------------+
+| ucase('banco de dados mysql') |
++-------------------------------+
+| BANCO DE DADOS MYSQL          |
++-------------------------------+
+1 row in set (0.07 sec)
+
+
+-- continue [pag. 86]
+
+-- 6.4 FUNÇÕES DE CÁLCULOS E OPERADORES ARITMÉTICOS
