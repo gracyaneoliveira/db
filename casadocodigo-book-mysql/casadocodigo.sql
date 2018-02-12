@@ -887,7 +887,7 @@ SELECT lcase(c_razaclien)
 
 -- Da mesma maneira que podemos retornar os registros de
 -- forma minúscula, podemos também de forma maiúscula. Utilize a
--- função ucase . Vamos consultar:
+-- função ucase .
 SELECT ucase('banco de dados mysql')
     FROM DUAL;
 +-------------------------------+
@@ -901,3 +901,196 @@ SELECT ucase('banco de dados mysql')
 -- continue [pag. 86]
 
 -- 6.4 FUNÇÕES DE CÁLCULOS E OPERADORES ARITMÉTICOS
+
+-- Round
+SELECT ROUND('21123.142', 2) FROM DUAL;
++-----------------------+
+| format('21123.142',2) |
++-----------------------+
+| 21123.14              |
++-----------------------+
+1 row in set (0.00 sec)
+
+-- Truncate
+-- Temos a opção de utilizar uma função que vai truncar as casas decimais, ou seja, omiti-las.
+SELECT 
+    TRUNCATE(MAX(n_totavenda), 0) maior_venda
+FROM
+    comvenda;
+
++-------------+
+| maior_venda |
++-------------+
+|       25141 |
++-------------+
+1 row in set (0.01 sec)
+
+-- Dependendo da situação com que você está lidando, você
+-- poderá deixar alguma casa decimal. Basta substituir o número zero
+-- pelo número de casas decimais que deseja truncar.
+
+SELECT 
+    TRUNCATE(min(n_totavenda),1) menor_venda
+FROM 
+    comvenda;
++-------------+
+| menor_venda |
++-------------+
+|      4650.6 |
++-------------+
+1 row in set (0.01 sec)
+
+-- Sqrt()
+-- raiz quadrada
+select sqrt(4);
+
++---------+
+| sqrt(4) |
++---------+
+|       2 |
++---------+
+1 row in set (0.00 sec)
+
+-- Funções: seno, cosseno e tangente
+select pi();
+select sin(pi());
+select cos(pi());
+select tan(pi()+1);
+
+-- 6.5 OPERADORES ARITMÉTICOS
+
+-- multiplicação: calculando o valor total de um item
+SELECT 
+    (n_qtdeivenda * n_valoivenda) multiplicação
+FROM
+    comivenda
+where n_numeivenda = 4;
++-----------------+
+| multiplicação   |
++-----------------+
+| 41038.72        |
++-----------------+
+1 row in set (0.00 sec)
+
+-- Somar todos os valores de produtos dos itens das vendas e dividir pelo número de itens vendidos
+SELECT 
+    TRUNCATE((SUM(n_valoivenda) / COUNT(n_numeivenda)),
+        2) divisão
+FROM
+    comivenda;
+    
+-- 6.6 FUNÇÕES DE DATA
+
+-- CURDATE() : para retornar a data atual, somente.
+-- NOW(): data e hora atual
+-- SYSDATE() : igual ao now()
+-- CURTIME para retornar somente o horário atual.
+SELECT curdate();    
++------------+
+|  curdate() |
++------------+
+| 2015-03-03 |
++------------+
+-- select now();
++---------------------+
+|       now()         |
++---------------------+
+| 2015-03-03 13:03:11 |
++---------------------+
+
+-- select curtime();
++-----------+
+| curtime() |
++-----------+
+| 12:56:36 |
++-----------+
+1 row in set (0.00 sec)
+
+-- Podemos também retornar o intervalo entre duas datas:
+select datediff('2015-02-01 23:59:59','2015-01-01');
+
++----------------------------------------------+
+| datediff('2015-02-01 23:59:59','2015-01-01') |
++----------------------------------------------+
+|                                           31 |
++----------------------------------------------+
+
+-- E adicionar dias a uma data:
+select date_add('2013-01-01', interval 31 day);
++-----------------------------------------+
+| date_add('2013-01-01', interval 31 day) |
++-----------------------------------------+
+|                              2013-02-01 |
++-----------------------------------------+
+1 row in set (0.00 sec)
+
+-- A função de selecionar o nome do dia da semana é muito útil.
+-- Você retornará o nome do dia da semana em vez de apenas a data
+-- com números, na tela para o seu usuário.
+select dayname('2015-01-01');
++-----------------------+
+| dayname('2015-01-01') |
++-----------------------+
+|              thursday |
++-----------------------+
+1 row in set (0.00 sec)
+
+-- Para retornar o dia do mês:
+select dayofmonth('2015-01-01');
++--------------------------+
+| dayofmonth('2015-01-01') |
++--------------------------+
+|                        1 |
++--------------------------+
+1 row in set (0.02 sec)
+
+-- Extrair o ano de uma data:
+select extract(year from '2015-01-01');
++---------------------------------+
+| extract(year from '2015-01-01') |
++---------------------------------+
+|                            2015 |
++---------------------------------+
+1 row in set (0.00 sec)
+
+-- Extrair o último dia do mês:
+select last_day('2015-02-01');
++------------------------+
+| last_day('2015-02-01') |
++------------------------+
+|             2015-02-28 |
++------------------------+
+1 row in set (0.00 sec)
+
+-- Formatando datas
+
+-- Um padrão de data que utilizaremos bastante é o EUR
+-- (DD.MM.YYYY), pois ele é parecido com o nosso.
+select date_format('2015-01-10',get_format(date,'EUR'));
++--------------------------------------------------+
+| date_format('2015-01-01',get_format(date,'EUR')) |
++--------------------------------------------------+
+| 10.01.2015 |
++--------------------------------------------------+
+1 row in set (0.00 sec)
+
+-- Você pode deparar-se com situações nas quais, por exemplo
+-- tem de fazer uma migração de dados para o seu banco MySQL,
+-- mas os campos de data deste outro estão em um formato diferente
+-- e como tipo texto. Com isso, você terá de converter o campo para
+-- tipo data e para um formato compatível com o seu banco. Para
+-- converter de texto para data, utilizaremos a função str_to_date
+-- e, em seguida, passaremos para o nosso formato. Veja o exemplo:
+select str_to_date('01.01.2015',get_format(date,'USA'));
++--------------------------------------------------+
+| str_to_date('01.01.2015',get_format(date,'USA')) |
++--------------------------------------------------+
+|                                       2015-01-01 |
++--------------------------------------------------+
+1 row in set (0.00 sec)
+
+
+-- continue [pag. 98]
+
+-- CAPITULO 7: 
+-- DEIXAR O BANCO PROCESSAR: PROCEDURES E FUNCTIONS
