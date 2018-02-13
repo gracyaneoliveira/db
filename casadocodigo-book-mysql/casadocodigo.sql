@@ -960,7 +960,7 @@ FROM
 -- CURDATE() : para retornar a data atual, somente.
 -- NOW(): data e hora atual
 -- SYSDATE() : igual ao now()
--- CURTIME() para retornar somente o horário atual.
+-- CURTIME(): para retornar somente o horário atual.
 SELECT curdate(); 
 /*
 +------------+
@@ -969,30 +969,3 @@ SELECT curdate();
 | 2015-03-03 |
 +------------+*/
 
-select now();
-/*
-+---------------------+
-|       now()         |
-+---------------------+
-| 2015-03-03 13:03:11 |
-+---------------------+*/
-
-select curtime();
-/*
-+-----------+
-| curtime() |
-+-----------+
-| 12:56:36 |
-+-----------+*/
-
--- Podemos também retornar o intervalo entre duas datas:
-select datediff('2015-02-01 23:59:59','2015-01-01');
-/*
-+----------------------------------------------+
-| datediff('2015-02-01 23:59:59','2015-01-01') |
-+----------------------------------------------+
-|                                           31 |
-+----------------------------------------------+*/
-
--- E adicionar dias a uma data:
-select date_add('2013-01-01', interval 31 day);
