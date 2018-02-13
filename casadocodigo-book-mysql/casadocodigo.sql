@@ -957,3 +957,4 @@ FROM
     
 -- 6.6 FUNÇÕES DE DATA
 
+-- CURDATE - para retornar a data atual, somente
