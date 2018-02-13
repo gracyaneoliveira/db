@@ -958,8 +958,7 @@ FROM
 -- 6.6 FUNÇÕES DE DATA
 
 -- CURDATE - para retornar a data atual, somente
--- NOW - data e hora atual
--- SYSDATE
+-- NOW or SYSDATE - data e hora atual
 -- CURTIME - para retornar somente o horário atual
 
 SELECT curdate(); 
