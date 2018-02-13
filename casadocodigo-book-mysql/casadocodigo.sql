@@ -459,3 +459,277 @@ WHERE n_numeclien NOT IN (1,2,3,4);
 | 0009        | AUTO WORKS            |
 | 00010       | DAHLKEMPER            |
 +-------------+-----------------------+*/
+
+-- 5.3 TRAGA INFORMAÇÃO DE VÁRIAS TABELAS COM JOINS
+
+-- continue [pag. 65]
+
+-- Para fazer um consulta em mais de uma tabela, nós utilizamos os
+-- chamados JOINs.
+-- No SQL, também temos um comando para ordenar as consultas.
+-- Para isso, temos o order by . Ordenando pela razão social do
+-- cliente, o nosso código ficará da seguinte maneira:
+SELECT c_codiclien, c_razaclien, c_codivenda Cod_Venda
+    FROM comvenda, comclien  -- join entre comvenda e comclien
+WHERE comvenda.n_numeclien = comclien.n_numeclien
+    ORDER BY c_razaclien;
+    
+-- A maneira mais formal de escrever uma consulta com JOIN
+-- é como está apresentado a seguir. Porém, não é a mais
+-- comum e utilizada no dia a dia, pois o código fica um pouco
+-- mais complexo.
+SELECT c_codiclien, c_razaclien, c_codivenda Cod_Venda
+    FROM comvenda
+        JOIN comclien 
+    ON comvenda.n_numeclien = comclien.n_numeclien
+ORDER BY c_razaclien;
+
+-- 5.4 SELECT EM: CREATE TABLE, INSERT, UPDATE E DELETE
+-- Criando tabelas por meio de select
+
+-- Surgiu a necessidade de criarmos uma tabela chamada
+-- comclien_bkp com a mesma estrutura e dados da comclien ,
+-- onde o c_estaclien seja igual a 'SP' . Podemos realizar
+-- algumas operações com esses registros e, por segurança, não
+-- usaremos os dados da tabela original.
+CREATE TABLE comclien_bkp AS( SELECT *
+                                FROM comclien
+                              WHERE c_estaclien = 'SP');
+
+-- Inserindo registros por meio de select
+-- Constantemente, surge a necessidade de inserir registros em
+-- alguma tabela, a fim de realizar algum processo no banco de dados.
+-- Às vezes, já temos esses dados em outra tabela e, com isso, em vez
+-- de criarmos scripts para inseri-los, nós podemos utilizar um
+-- select para buscar o que temos e colocar em nossa nova tabela.
+
+-- Em nosso projeto, apareceu a necessidade da criação uma
+-- tabela para agenda telefônica. Ela terá como base alguns campos da
+-- tabela de clientes e todos eles serão cadastrados nela também.
+CREATE TABLE comcontato(
+    n_numecontato int NOT null AUTO_INCREMENT,
+    c_nomecontato varchar(200),
+    c_fonecontato varchar(30),
+    c_cidacontato varchar(200),
+    c_estacontato varchar(2),
+    n_numeclien int,
+    PRIMARY KEY(n_numecontato)
+);
+
+-- Agora vamos popular as colunas da nossa tabela comcontato
+-- com essas informações que temos da tabela comclien .
+INSERT INTO comcontato(
+    SELECT n_numeclien,
+        c_nomeclien,
+        c_foneclien,
+        c_cidaclien,
+        c_estaclien,
+        n_numeclien
+    FROM comclien
+);
+
+-- Para visualizar os registros da nossa tabela, faça um select simples para listá-los.
+SELECT * FROM comcontato;
+
+-- Alterando registros por meio de select
+
+-- Neste momento, descobrimos que os contatos dos cliente que
+-- estão na tabela comclien_bkp , na verdade, possuem o contato
+-- em outra cidade e estado, diferente dos dados que estão na comclien . 
+-- Ainda utilizando um select , faremos um update
+-- nos campos c_cidacontato e c_estacontato , buscando os registros 
+-- da tabela comclien_bkp e alterando a comcontato .
+
+UPDATE comcontato SET c_cidacontato = 'LONDRINA', c_estacontato = 'PR'
+    WHERE n_numeclien IN (SELECT n_numeclien
+                            FROM comclien_bkp);
+
+-- Deletando registros por meio de select
+
+-- Agora temos a necessidade de deletar todos os registros da tabela
+-- comcontato que não possuem registros na tabela
+-- comvenda ; ou seja, aqueles que não possuem nenhuma venda.
+DELETE FROM comcontato
+    WHERE n_numeclien NOT IN (SELECT n_numeclien
+                                FROM comvenda);
+
+-- Agora, se consultarmos a tabela comcontato , não veremos o
+-- contato que não possuía nenhum registro na comvenda .
+
+-- continue [pag.75]
+
+-- CAPÍTULO 6 CONSULTAS COM FUNÇÕES
+
+-- 6.1 FUNÇÕES
+
+-- Elas estão divididas nos seguintes tipos: numéricas, lógica, manipulação de string e
+-- funções de data e hora.
+
+-- 6.2 FUNÇÕES DE AGREGAÇÃO
+
+-- As funções de agregação são responsáveis por agrupar vários
+-- valores e retornar somente um único para um determinado grupo.
+-- Por exemplo, se fizermos um select em todos registros da tabela
+-- de vendas com join com a tabela de clientes, vamos ter como
+-- resultado clientes repetidos.
+/*
++-------------+------------------------+
+| c_codiclien | c_razaclien            |
++-------------+------------------------+
+| 0001        | AARONSON FURNITURE LTD |
+| 0001        | AARONSON FURNITURE LTD |
+| 0001        | AARONSON FURNITURE LTD |
+| 0009        | AUTO WORKS LTDA        |
+...*/
+
+-- Alguns clientes repetem-se, pois existem aqueles que possuem
+-- mais de uma venda. Desta maneira, poderíamos utilizar uma
+-- função de agregação para retorná-los, evitando a repetição.
+
+-- Group by
+
+-- O comando SQL para fazer essa operação de agregação é o
+-- group by . Ele deverá ser utilizado logo após as cláusulas de
+-- condições where ou and , e antes do order by , se a sua
+-- consulta possuí-lo.
+
+SELECT c_codiclien, c_razaclien
+    FROM comclien, comvenda
+WHERE comvenda.n_numeclien = comclien.n_numeclien
+    GROUP BY c_codiclien, c_razaclien
+    ORDER BY c_razaclien;
+/*
++-------------+------------------------+
+| c_codiclien | c_razaclien            |
++-------------+------------------------+
+| 0001        | AARONSON FURNITURE LTD |
+| 0009        | AUTO WORKS LTDA        |
+| 0004        | GREAT AMERICAN MUSIC   |
+| 0008        | HUGHES MARKETS LTDA    |
+| 0003        | KELSEY NEIGHBOURHOOD   |
+| 0005        | LIFE PLAN COUNSELLING  |
+| 0002        | LITTLER LTDA           |
+| 0006        | PRACTI-PLAN LTDA       |
+| 0007        | SPORTSWEST LTDA        |
++-------------+------------------------+*/
+
+-- O MySQL agrupou o código e a razão social, trazendo apenas
+-- um registro de cada. Porém, essa consulta poderia ser melhor se
+-- tivéssemos a quantidade de vendas de cliente. Podemos utilizar
+-- uma outra função de agregação chamada count() para contar os
+-- registros que estão agrupados. Ela só pode ser utilizada na cláusula
+-- select , pois contará os registros da coluna que está sendo
+-- selecionada. Complementando o código anterior, teremos:
+
+SELECT c_codiclien, c_razaclien, COUNT(n_numevenda) Qtde
+    FROM comclien, comvenda
+WHERE comvenda.n_numeclien = comclien.n_numeclien
+    GROUP BY c_codiclien, c_razaclien
+    ORDER BY c_razaclien;
+/*
++-------------+------------------------+------+
+| c_codiclien | c_razaclien            | Qtde |
++-------------+------------------------+------+
+| 0001        | AARONSON FURNITURE LTD | 3    |
+| 0009        | AUTO WORKS LTDA        | 3    |
+| 0004        | GREAT AMERICAN MUSIC   | 1    |
+| 0008        | HUGHES MARKETS LTDA    | 2    |
+| 0003        | KELSEY NEIGHBOURHOOD   | 3    |
+| 0005        | LIFE PLAN COUNSELLING  | 2    |
+| 0002        | LITTLER LTDA           | 2    |
+| 0006        | PRACTI-PLAN LTDA       | 2    | 
+| 0007        | SPORTSWEST LTDA        | 2    |
++-------------+------------------------+------+*/
+
+
+-- O count pode ser usado apenas para contar a quantidade de
+-- registro em uma tabela. Vamos substituir a coluna que estava entre
+-- parênteses no exemplo anterior por * (asterisco), para contar
+-- todas as linhas da tabela de clientes.
+
+select count(*) from comclien;
+/*
++----------+
+| count(*) |
++----------+
+| 10       |
++----------+*/
+
+-- Having count()
+-- Agora, em nosso projeto, temos a necessidade de fazer um
+-- relatório que traga como resultado os clientes que tiveram mais do
+-- que duas vendas. Para isso, utilizaremos a função having count() , 
+-- que será a condição para o seu count() .
+-- Exemplificando, temos:
+
+SELECT c_razaclien, COUNT(n_numevenda)
+    FROM comclien, comvenda
+WHERE comvenda.n_numeclien = comclien.n_numeclien
+    GROUP BY c_razaclien
+HAVING COUNT(n_numevenda) > 2;
+/*
++------------------------+--------------------+
+| c_razaclien            | count(n_numevenda) |
++------------------------+--------------------+
+| AARONSON FURNITURE LTD | 3                  |
+| AUTO WORKS LTDA        | 3                  |
+| KELSEY NEIGHBOURHOOD   | 3                  |
++------------------------+--------------------+*/
+
+-- max() e min()
+
+-- Muitas vezes, por n motivos, surge a necessidade de retornar
+-- o maior ou menor registro de uma tabela.
+-- Fazemos isso com as funções MAX() e MIN() , respectivamente.
+-- Nos parênteses deverá ir a coluna que você deseja recuperar. São
+-- funções simples do SQL que são de grande utilidade.
+-- Se quisermos recuperar o valor da maior venda, nossa consulta seria:
+
+SELECT MAX(n_totavenda) maior_venda 
+    FROM comvenda;
+/*
++-------------+
+| maior_venda |
++-------------+
+| 25141.02    |
++-------------+*/
+
+-- Já para a menor:
+SELECT min(n_totavenda) menor_venda, 
+       max(n_totavenda) maior_venda 
+FROM comvenda;
+/*
++-------------+-------------+
+| menor_venda | maior_venda |
++-------------+-------------+
+| 4650.64     | 25141.02    |
++-------------+-------------+*/
+
+-- Sum()
+
+-- No MySQL, podemos somar todos os valores de uma coluna utilizando a função sum() .
+-- Como exemplo, vamos somar os valores individualmente das
+-- colunas: n_valovenda , n_descvenda e n_totavenda no intervalo de 01/01/2015 a 31/01/2015.
+SELECT SUM(n_valovenda) valor_venda,
+       SUM(n_descvenda) descontos,
+       SUM(n_totavenda) total_venda
+FROM comvenda
+      WHERE d_datavenda BETWEEN '2015-01-01' AND '2015-01-31';
+/*      
++-------------+-----------+-------------+
+| valor_venda | descontos | total_venda |
++-------------+-----------+-------------+
+| 75830.72    | 0.00      | 75830.72    |
++-------------+-----------+-------------+*/
+
+-- Avg()
+-- No MySQL temos o avg(), que busca a coluna cuja média você deseja saber e realiza
+-- o cálculo. Vamos exemplificar consultando o valor médio de todas as vendas:
+SELECT format(AVG(n_totavenda),2)
+    FROM comvenda;
+/*
++----------------------------+
+| format(avg(n_totavenda),2) |
++----------------------------+
+| 12,213.96                  |
++----------------------------+*/
