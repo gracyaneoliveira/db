@@ -281,3 +281,26 @@ WHERE c_codiclien = '0001';
 SELECT n_numeclien, c_codiclien, c_razaclien
     FROM comclien
 WHERE c_codiclien <> '0001';
+
+-- +-------------+-------------+------------------------+
+-- | n_numeclien |  c_codiclien |           c_razaclien |
+-- +-------------+-------------+------------------------+
+-- |           2 |         0002 |          LITTLER LTDA |
+-- |           3 |         0003 |  KELSEY NEIGHBOURHOOD |
+-- |           4 |         0004 |  GREAT AMERICAN MUSIC |
+-- |           5 |         0005 | LIFE PLAN COUNSELLING |
+-- |           6 |         0006 |      PRACTI-PLAN LTDA |
+-- |           7 |         0007 |       SPORTSWEST LTDA |
+-- |           8 |         0008 |   HUGHES MARKETS LTDA |
+-- |           9 |         0009 |       AUTO WORKS LTDA |
+-- |          10 |        00010 |       DAHLKEMPER LTDA |
+-- +-------------+-------------+------------------------+
+-- Observe que ele trouxe todos os clientes, exceto aquele cujo
+-- c_codiclien é igual a '0001'.
+
+-- LIKE
+-- Se quisermos retornar todos os clientes que se iniciam com a letra L, montaríamos nossa
+-- consulta da seguinte maneira:
+SELECT n_numeclien, c_codiclien, c_razaclien
+    FROM comclien
+WHERE c_razaclien LIKE 'L%';
