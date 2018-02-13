@@ -6,8 +6,8 @@
 -- Criando um Novo Usuario:
     -- nome: usermysql
     -- senha: cursomysql
-mysql > CREATE USER usermysql@'%' identified by 'cursomysql';
-mysql > CREATE USER usermysql@'localhost' identified by 'cursomysql';
+CREATE USER usermysql@'%' identified by 'cursomysql';
+CREATE USER usermysql@'localhost' identified by 'cursomysql';
 
 -- Quando utilizamos o % em nosso código, estamos dizendo que
 -- este usuário poderá acessar o nosso banco a partir de qualquer host. 
@@ -15,12 +15,12 @@ mysql > CREATE USER usermysql@'localhost' identified by 'cursomysql';
 -- Com o comando acima ele já está criado, porém não tem nenhuma permissão. 
 -- Como não precisamos limitá-lo, vamos conceder direito total a ele. 
 -- Faremos isso com o seguinte comando:
-mysql> GRANT ALL PRIVILEGES ON *.* TO usermysql@'%' WITH GRANT OPTION;
-mysql> GRANT ALL PRIVILEGES ON *.* TO usermysql@'localhost' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON *.* TO usermysql@'%' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON *.* TO usermysql@'localhost' WITH GRANT OPTION;
 
 -- Utilizamos grant para conceder o acesso de usuários. 
 -- Porém, se quiséssemos revogá-lo, faríamos da seguinte maneira:
-mysql> revoke all on *.* from usermysql;
+revoke all on *.* from usermysql;
 
 -- Concedendo privilegios a somente um banco de dados:
 GRANT ALL PRIVILEGES ON comercial.* to 'usermysql'@'localhost';
@@ -55,7 +55,7 @@ CREATE TABLE comclien(
 
 -- Por padrão, o auto_increment inicia-se do 1. 
 -- Porém, se houver a necessidade de iniciar por outro valor você pode alterá-lo, fazendo:
-mysql > ALTER TABLE comclien AUTO_INCREMENT=100;
+ALTER TABLE comclien AUTO_INCREMENT=100;
 
 CREATE TABLE comforne(
     n_numeforne int NOT null AUTO_INCREMENT,
@@ -210,21 +210,21 @@ values (1,
 UPDATE comclien SET c_nomeclien = 'AARONSON FURNITURE' WHERE n_numeclien = 1;
 
 -- Podemos atualizar mais de um campo de uma vez só, separando com ',' :
-mysql > UPDATE comclien SET 
+UPDATE comclien SET 
             c_nomeclien = 'AARONSON FURNITURE', 
             c_cidaclien = 'LONDRINA', 
             c_estaclien = 'PR'
         WHERE n_numeclien = 1;
 
-mysql > commit;
+commit;
 
 -- Utilizei o commit para dizer para o SGBD que ele pode realmente 
 -- salvar a alteração do registro. Se, por engano, fizermos o update 
 -- incorreto, antes do commit , podemos reverter a situação usando a 
 -- instrução SQL rollback , da seguinte maneira:
-mysql > UPDATE comclien SET c_nomeclien = 'AARONSON'
+UPDATE comclien SET c_nomeclien = 'AARONSON'
         WHERE n_numeclien = 1;
-mysql > rollback;
+rollback;
 
 -- Com isso, o nosso SGBD vai reverter a última instrução.
 
@@ -240,12 +240,12 @@ mysql > rollback;
 -- enquanto, o delete deletará os registros das tabelas, podendo excluir apenas
 -- uma linha ou todos os registros, como você desejar.
 
-mysql > DELETE FROM comclien WHERE n_numeclien = 1;
-mysql > commit;
+DELETE FROM comclien WHERE n_numeclien = 1;
+commit;
 
 -- Deletar todos os registros da tabela de clientes.
-mysql > DELETE FROM comclien;
-mysql > commit;
+DELETE FROM comclien;
+commit;
 
 -- CLAUSULA : TRUNCATE
 -- Além do delete , podemos fazer a deleção de dados usando
@@ -257,7 +257,7 @@ mysql > commit;
 -- ele retorna a consulta e restaura os dados. 
 -- Já o truncate não a utiliza, o SGBD faz a deleção direta. 
 -- Para usar esse comando, faça do seguinte modo:
-mysql> truncate table comclien;
+truncate table comclien;
 
 -- continue [pag. 53]
 
@@ -284,20 +284,19 @@ SELECT n_numeclien, c_codiclien, c_razaclien
     FROM comclien
 WHERE c_codiclien <> '0001';
 
-+-------------+-------------+------------------------+
-| n_numeclien |  c_codiclien |           c_razaclien |
-+-------------+-------------+------------------------+
-|           2 |         0002 |          LITTLER LTDA |
-|           3 |         0003 |  KELSEY NEIGHBOURHOOD |
-|           4 |         0004 |  GREAT AMERICAN MUSIC |
-|           5 |         0005 | LIFE PLAN COUNSELLING |
-|           6 |         0006 |      PRACTI-PLAN LTDA |
-|           7 |         0007 |       SPORTSWEST LTDA |
-|           8 |         0008 |   HUGHES MARKETS LTDA |
-|           9 |         0009 |       AUTO WORKS LTDA |
-|          10 |        00010 |       DAHLKEMPER LTDA |
-+-------------+-------------+------------------------+
-9 rows in set (0.00 sec)
+-- +-------------+-------------+------------------------+
+-- | n_numeclien |  c_codiclien |           c_razaclien |
+-- +-------------+-------------+------------------------+
+-- |           2 |         0002 |          LITTLER LTDA |
+-- |           3 |         0003 |  KELSEY NEIGHBOURHOOD |
+-- |           4 |         0004 |  GREAT AMERICAN MUSIC |
+-- |           5 |         0005 | LIFE PLAN COUNSELLING |
+-- |           6 |         0006 |      PRACTI-PLAN LTDA |
+-- |           7 |         0007 |       SPORTSWEST LTDA |
+-- |           8 |         0008 |   HUGHES MARKETS LTDA |
+-- |           9 |         0009 |       AUTO WORKS LTDA |
+-- |          10 |        00010 |       DAHLKEMPER LTDA |
+-- +-------------+-------------+------------------------+
 -- Observe que ele trouxe todos os clientes, exceto aquele cujo
 -- c_codiclien é igual a '0001'.
 
@@ -343,20 +342,19 @@ SELECT c_codiclien, c_razaclien
     FROM comclien
 WHERE n_numeclien IN (1,2);
 
+/*
 +-------------+------------------------+
 | c_codiclien | c_razaclien            |
 +-------------+------------------------+
 | 0001        | AARONSON FURNITURE LTD |
 | 0002        | LITTLER LTDA           |
-+-------------+------------------------+
-2 rows in set (0.63 sec)
-
++-------------+------------------------+ */
 -- Ou podíamos consultar clientes que possuem o n_numeclien
 -- diferente de 1 e 2. Nesta ocasião, devemos utilizar o NOT IN . Vamos ao código.
 SELECT c_codiclien, c_razaclien
     FROM comclien
 WHERE n_numeclien NOT IN (1,2);
-
+/*
 +-------------+-----------------------+
 | c_codiclien | c_razaclien           |
 +-------------+-----------------------+
@@ -368,8 +366,7 @@ WHERE n_numeclien NOT IN (1,2);
 | 0008        | HUGHES MARKETS LTDA   |
 | 0009        | AUTO WORKS LTDA       |
 | 00010       | DAHLKEMPER LTDA       |
-+-------------+-----------------------+
-8 rows in set (0.00 sec)
++-------------+-----------------------+*/
 
 -- Nas duas últimas consultas, nós sabíamos os números dos
 -- clientes que queríamos ou não consultar. 
@@ -379,7 +376,7 @@ WHERE n_numeclien NOT IN (1,2);
 SELECT c_razaclien
     FROM comclien
 WHERE n_numeclien IN (SELECT DISTINCT n_numeclien FROM comvenda);
-
+/*
 +------------------------+
 | c_razaclien            |
 +------------------------+
@@ -392,8 +389,7 @@ WHERE n_numeclien IN (SELECT DISTINCT n_numeclien FROM comvenda);
 | LITTLER LTDA           |
 | PRACTI-PLAN LTDA       |
 | SPORTSWEST LTDA        |
-+------------------------+
-9 rows in set (0.00 sec)
++------------------------+*/
 
 -- Utilizando a mesma situação, vamos buscar os clientes que
 -- ainda não fizeram nenhuma venda. 
@@ -405,12 +401,11 @@ SELECT c_razaclien
     FROM comclien
 WHERE n_numeclien NOT IN (SELECT n_numeclien FROM comvenda);
 
-+------------------+
-| c_razaclien      |
-+------------------+
-| DAHLKEMPER LTDA  |
-+------------------+
-1 row in set (0.01 sec)
+-- +------------------+
+-- | c_razaclien      |
+-- +------------------+
+-- | DAHLKEMPER LTDA  |
+-- +------------------+
 
 -- vamos supor que, em nosso sistema, surgiu a necessidade de desenvolver uma
 -- consulta para retornar o código das vendas e a razão social dos
@@ -426,7 +421,7 @@ WHERE n_numeclien NOT IN (SELECT n_numeclien FROM comvenda);
                                         FROM comclien
                                     WHERE n_numeclien = comvenda.n_numeclien) Nome_Cliente
         FROM comvenda;
-        
+        /*
         +-------------+------------------------+
         | Cod_Venda | Nome_Cliente             |
         +-------------+------------------------+
@@ -435,7 +430,7 @@ WHERE n_numeclien NOT IN (SELECT n_numeclien FROM comvenda);
         | 3         | KELSEY NEIGHBOURHOOD     |
         | 4         | GREAT AMERICAN MUSIC     |
         | 5         | LIFE PLAN COUNSELLING    |
-        ...
+        ...*/
         
 -- Essa maneira não é muito usada, porque há perda de
 -- performance e o código não fica legal. 
@@ -455,6 +450,7 @@ WHERE n_numeclien NOT IN (SELECT n_numeclien FROM comvenda);
 SELECT c_codiclien CODIGO, c_nomeclien CLIENTE
     FROM comclien
 WHERE n_numeclien NOT IN (1,2,3,4);
+/*
 +-------------+-----------------------+
 | CODIGO      |      CLIENTE          |
 +-------------+-----------------------+
@@ -464,8 +460,7 @@ WHERE n_numeclien NOT IN (1,2,3,4);
 | 0008        | HUGHES MARKETS        |
 | 0009        | AUTO WORKS            |
 | 00010       | DAHLKEMPER            |
-+-------------+-----------------------+
-6 rows in set (0.00 sec)
++-------------+-----------------------+*/
 
 -- 5.3 TRAGA INFORMAÇÃO DE VÁRIAS TABELAS COM JOINS
 
@@ -522,7 +517,6 @@ CREATE TABLE comcontato(
     n_numeclien int,
     PRIMARY KEY(n_numecontato)
 );
-Query OK, 0 rows affected (2.07 sec)
 
 -- Agora vamos popular as colunas da nossa tabela comcontato
 -- com essas informações que temos da tabela comclien .
@@ -535,11 +529,9 @@ INSERT INTO comcontato(
         n_numeclien
     FROM comclien
 );
-Query OK, 10 rows affected (0.16 sec)
-Records: 10 Duplicates: 0 Warnings: 0
 
 -- Para visualizar os registros da nossa tabela, faça um select simples para listá-los.
-mysql > SELECT * FROM comcontato;
+SELECT * FROM comcontato;
 
 -- Alterando registros por meio de select
 
@@ -553,9 +545,6 @@ mysql > SELECT * FROM comcontato;
 UPDATE comcontato SET c_cidacontato = 'LONDRINA', c_estacontato = 'PR'
     WHERE n_numeclien IN (SELECT n_numeclien
                             FROM comclien_bkp);
-                            
-Query OK, 3 rows affected (0.31 sec)
-Rows matched: 3 Changed: 3 Warnings: 0
 
 -- Deletando registros por meio de select
 
@@ -565,7 +554,6 @@ Rows matched: 3 Changed: 3 Warnings: 0
 DELETE FROM comcontato
     WHERE n_numeclien NOT IN (SELECT n_numeclien
                                 FROM comvenda);
-Query OK, 1 rows affected (0.09 sec)
 
 -- Agora, se consultarmos a tabela comcontato , não veremos o
 -- contato que não possuía nenhum registro na comvenda .
@@ -586,7 +574,7 @@ Query OK, 1 rows affected (0.09 sec)
 -- Por exemplo, se fizermos um select em todos registros da tabela
 -- de vendas com join com a tabela de clientes, vamos ter como
 -- resultado clientes repetidos.
-
+/*
 +-------------+------------------------+
 | c_codiclien | c_razaclien            |
 +-------------+------------------------+
@@ -594,7 +582,7 @@ Query OK, 1 rows affected (0.09 sec)
 | 0001        | AARONSON FURNITURE LTD |
 | 0001        | AARONSON FURNITURE LTD |
 | 0009        | AUTO WORKS LTDA        |
-...
+...*/
 
 -- Alguns clientes repetem-se, pois existem aqueles que possuem
 -- mais de uma venda. Desta maneira, poderíamos utilizar uma
@@ -612,7 +600,7 @@ SELECT c_codiclien, c_razaclien
 WHERE comvenda.n_numeclien = comclien.n_numeclien
     GROUP BY c_codiclien, c_razaclien
     ORDER BY c_razaclien;
-
+/*
 +-------------+------------------------+
 | c_codiclien | c_razaclien            |
 +-------------+------------------------+
@@ -625,8 +613,7 @@ WHERE comvenda.n_numeclien = comclien.n_numeclien
 | 0002        | LITTLER LTDA           |
 | 0006        | PRACTI-PLAN LTDA       |
 | 0007        | SPORTSWEST LTDA        |
-+-------------+------------------------+
-9 rows in set (0.00 sec)
++-------------+------------------------+*/
 
 -- O MySQL agrupou o código e a razão social, trazendo apenas
 -- um registro de cada. Porém, essa consulta poderia ser melhor se
@@ -641,7 +628,7 @@ SELECT c_codiclien, c_razaclien, COUNT(n_numevenda) Qtde
 WHERE comvenda.n_numeclien = comclien.n_numeclien
     GROUP BY c_codiclien, c_razaclien
     ORDER BY c_razaclien;
-
+/*
 +-------------+------------------------+------+
 | c_codiclien | c_razaclien            | Qtde |
 +-------------+------------------------+------+
@@ -654,8 +641,8 @@ WHERE comvenda.n_numeclien = comclien.n_numeclien
 | 0002        | LITTLER LTDA           | 2    |
 | 0006        | PRACTI-PLAN LTDA       | 2    | 
 | 0007        | SPORTSWEST LTDA        | 2    |
-+-------------+------------------------+------+
-9 rows in set (0.00 sec)
++-------------+------------------------+------+*/
+
 
 -- O count pode ser usado apenas para contar a quantidade de
 -- registro em uma tabela. Vamos substituir a coluna que estava entre
@@ -663,12 +650,12 @@ WHERE comvenda.n_numeclien = comclien.n_numeclien
 -- todas as linhas da tabela de clientes.
 
 select count(*) from comclien;
+/*
 +----------+
 | count(*) |
 +----------+
 | 10       |
-+----------+
-1 row in set (0.05 sec)
++----------+*/
 
 -- Having count()
 -- Agora, em nosso projeto, temos a necessidade de fazer um
@@ -682,15 +669,14 @@ SELECT c_razaclien, COUNT(n_numevenda)
 WHERE comvenda.n_numeclien = comclien.n_numeclien
     GROUP BY c_razaclien
 HAVING COUNT(n_numevenda) > 2;
-
+/*
 +------------------------+--------------------+
 | c_razaclien            | count(n_numevenda) |
 +------------------------+--------------------+
 | AARONSON FURNITURE LTD | 3                  |
 | AUTO WORKS LTDA        | 3                  |
 | KELSEY NEIGHBOURHOOD   | 3                  |
-+------------------------+--------------------+
-3 rows in set (0.00 sec)
++------------------------+--------------------+*/
 
 -- max() e min()
 
@@ -703,24 +689,23 @@ HAVING COUNT(n_numevenda) > 2;
 
 SELECT MAX(n_totavenda) maior_venda 
     FROM comvenda;
+/*
 +-------------+
 | maior_venda |
 +-------------+
 | 25141.02    |
-+-------------+
-1 row in set (0.00 sec)
++-------------+*/
 
 -- Já para a menor:
 SELECT min(n_totavenda) menor_venda, 
        max(n_totavenda) maior_venda 
 FROM comvenda;
-
+/*
 +-------------+-------------+
 | menor_venda | maior_venda |
 +-------------+-------------+
 | 4650.64     | 25141.02    |
-+-------------+-------------+
-1 row in set (0.00 sec)
++-------------+-------------+*/
 
 -- Sum()
 
@@ -732,25 +717,24 @@ SELECT SUM(n_valovenda) valor_venda,
        SUM(n_totavenda) total_venda
 FROM comvenda
       WHERE d_datavenda BETWEEN '2015-01-01' AND '2015-01-31';
-      
+/*      
 +-------------+-----------+-------------+
 | valor_venda | descontos | total_venda |
 +-------------+-----------+-------------+
 | 75830.72    | 0.00      | 75830.72    |
-+-------------+-----------+-------------+
-1 row in set (0.00 sec)
++-------------+-----------+-------------+*/
 
 -- Avg()
 -- No MySQL temos o avg(), que busca a coluna cuja média você deseja saber e realiza
 -- o cálculo. Vamos exemplificar consultando o valor médio de todas as vendas:
 SELECT format(AVG(n_totavenda),2)
     FROM comvenda;
+/*
 +----------------------------+
 | format(avg(n_totavenda),2) |
 +----------------------------+
 | 12,213.96                  |
-+----------------------------+
-1 row in set (0.00 sec)
++----------------------------+*/
 
 
 -- 6.3 FUNÇÕES DE STRING
@@ -779,15 +763,14 @@ SELECT c_codiprodu, c_descprodu
     FROM comprodu
 WHERE substr(c_codiprodu,1,3) = '123'
     AND length(c_descprodu) > 4;
-
+/*
 +-------------+-------------+
 | c_codiprodu | c_descprodu |
 +-------------+-------------+
 | 123131      | NOTEBOOK    |
 | 123223      | SMARTPHONE  |
 | 1234        | DESKTOP     |
-+-------------+-------------+
-2 rows in set (0.03 sec)
++-------------+-------------+*/
 
 -- Utilizamos, no exemplo, o substr() e o length() para
 -- fazermos uma validação. Poderíamos ter utilizado para apresentar
@@ -799,13 +782,12 @@ SELECT substr(c_razaclien,1,5) Razao_Social,
        length(c_codiprodu) Tamanho_Cod
     FROM comclien
 WHERE n_numeclien = 1;
-
+/*
 +-------------+--------------+
 | Razao_Social | Tamanho_Cod |
 +-------------+--------------+
 | AARON        | 6           |
-+-------------+--------------+
-1 rows in set (0.00 sec)
++-------------+--------------+*/
 
 -- Concat() e concat_ws()
 
@@ -816,15 +798,14 @@ WHERE n_numeclien = 1;
 SELECT concat(c_razaforne,' - fone: ', c_foneforne)
     FROM comforne
 ORDER BY c_razaforne;
-
+/*
 +-------------------------------------------------------+
 | concat(c_razaforne,' - fone: ', c_foneforne)          |
 +-------------------------------------------------------+
 | DUN RITE LAWN MAINTENANCE LTDA - fone: (85) 7886-8837 |
 | SEWFRO FABRICS LTDA - fone: (91) 5171-8483            |
 | WISE SOLUTIONS LTDA - fone: (11) 5347-5838            |
-+-------------------------------------------------------+
-3 rows in set (0.04 sec)
++-------------------------------------------------------+*/
 
 -- Por alguma necessidade, precisamos fazer consultas e
 -- concatenar mais de um campo. 
@@ -839,13 +820,12 @@ SELECT
     concat(c_codiclien,' ',c_razaclien, ' ', c_nomeclien)
 FROM comclien
     WHERE c_razaclien LIKE 'GREA%';
-    
+/*    
 +---------------------------------------------------------+
 | concat(c_codiclien,' ',c_razaclien, ' ', c_nomeclien)   |
 +---------------------------------------------------------+
 | 0004 GREAT AMERICAN MUSIC GREAT AMERICAN MUSIC          |
-+---------------------------------------------------------+
-1 row in set (0.00 sec)
++---------------------------------------------------------+*/
 
 -- Olhando para o resultado, observe que nós separamos os
 -- campos com duplo espaço. 
@@ -855,12 +835,12 @@ SELECT
     concat_ws(';',c_codiclien, c_razaclien, c_nomeclien)
 FROM comclien
     WHERE c_razaclien LIKE 'GREA%';
+/*
 +------------------------------------------------------+
 | concat_ws(';',c_codiclien, c_razaclien, c_nomeclien) |
 +------------------------------------------------------+
 | 0004;GREAT AMERICAN MUSIC;GREAT AMERICAN MUSIC       |
-+------------------------------------------------------+
-1 row in set (0.00 sec)
++------------------------------------------------------+*/
 
 -- Observe que agora apenas declaramos qual o separador
 -- queríamos e o SGBD colocou-o entre os campos.
@@ -874,14 +854,14 @@ FROM comclien
 
 SELECT lcase(c_razaclien)
     FROM comclien;
-
+/*
 +------------------------+
 | lcase(c_razaclien)     |
 +------------------------+
 | aaronson furniture ltd |
 | auto works ltda        |
 | dahlkemper ltda        |
-...
+...*/
 
 -- Ucase()
 
@@ -890,12 +870,12 @@ SELECT lcase(c_razaclien)
 -- função ucase .
 SELECT ucase('banco de dados mysql')
     FROM DUAL;
+/*
 +-------------------------------+
 | ucase('banco de dados mysql') |
 +-------------------------------+
 | BANCO DE DADOS MYSQL          |
-+-------------------------------+
-1 row in set (0.07 sec)
++-------------------------------+*/
 
 
 -- continue [pag. 86]
@@ -904,12 +884,12 @@ SELECT ucase('banco de dados mysql')
 
 -- Round
 SELECT ROUND('21123.142', 2) FROM DUAL;
+/*
 +-----------------------+
 | format('21123.142',2) |
 +-----------------------+
 | 21123.14              |
-+-----------------------+
-1 row in set (0.00 sec)
++-----------------------+*/
 
 -- Truncate
 -- Temos a opção de utilizar uma função que vai truncar as casas decimais, ou seja, omiti-las.
@@ -917,13 +897,12 @@ SELECT
     TRUNCATE(MAX(n_totavenda), 0) maior_venda
 FROM
     comvenda;
-
+/*
 +-------------+
 | maior_venda |
 +-------------+
 |       25141 |
-+-------------+
-1 row in set (0.01 sec)
++-------------+*/
 
 -- Dependendo da situação com que você está lidando, você
 -- poderá deixar alguma casa decimal. Basta substituir o número zero
@@ -933,23 +912,22 @@ SELECT
     TRUNCATE(min(n_totavenda),1) menor_venda
 FROM 
     comvenda;
+    /*
 +-------------+
 | menor_venda |
 +-------------+
 |      4650.6 |
-+-------------+
-1 row in set (0.01 sec)
++-------------+*/
 
 -- Sqrt()
 -- raiz quadrada
 select sqrt(4);
-
+/*
 +---------+
 | sqrt(4) |
 +---------+
 |       2 |
-+---------+
-1 row in set (0.00 sec)
++---------+*/
 
 -- Funções: seno, cosseno e tangente
 select pi();
@@ -965,12 +943,12 @@ SELECT
 FROM
     comivenda
 where n_numeivenda = 4;
+/*
 +-----------------+
 | multiplicação   |
 +-----------------+
 | 41038.72        |
-+-----------------+
-1 row in set (0.00 sec)
++-----------------+*/
 
 -- Somar todos os valores de produtos dos itens das vendas e dividir pelo número de itens vendidos
 SELECT 
@@ -985,94 +963,97 @@ FROM
 -- NOW(): data e hora atual
 -- SYSDATE() : igual ao now()
 -- CURTIME para retornar somente o horário atual.
-SELECT curdate();    
+SELECT curdate(); 
+/*
 +------------+
 |  curdate() |
 +------------+
 | 2015-03-03 |
-+------------+
--- select now();
++------------+*/
+
+select now();
+/*
 +---------------------+
 |       now()         |
 +---------------------+
 | 2015-03-03 13:03:11 |
-+---------------------+
++---------------------+*/
 
--- select curtime();
+select curtime();
+/*
 +-----------+
 | curtime() |
 +-----------+
 | 12:56:36 |
-+-----------+
-1 row in set (0.00 sec)
++-----------+*/
 
 -- Podemos também retornar o intervalo entre duas datas:
 select datediff('2015-02-01 23:59:59','2015-01-01');
-
+/*
 +----------------------------------------------+
 | datediff('2015-02-01 23:59:59','2015-01-01') |
 +----------------------------------------------+
 |                                           31 |
-+----------------------------------------------+
++----------------------------------------------+*/
 
 -- E adicionar dias a uma data:
 select date_add('2013-01-01', interval 31 day);
+/*
 +-----------------------------------------+
 | date_add('2013-01-01', interval 31 day) |
 +-----------------------------------------+
 |                              2013-02-01 |
-+-----------------------------------------+
-1 row in set (0.00 sec)
++-----------------------------------------+*/
 
 -- A função de selecionar o nome do dia da semana é muito útil.
 -- Você retornará o nome do dia da semana em vez de apenas a data
 -- com números, na tela para o seu usuário.
 select dayname('2015-01-01');
+/*
 +-----------------------+
 | dayname('2015-01-01') |
 +-----------------------+
 |              thursday |
-+-----------------------+
-1 row in set (0.00 sec)
++-----------------------+*/
 
 -- Para retornar o dia do mês:
 select dayofmonth('2015-01-01');
+/*
 +--------------------------+
 | dayofmonth('2015-01-01') |
 +--------------------------+
 |                        1 |
-+--------------------------+
-1 row in set (0.02 sec)
++--------------------------+*/
 
 -- Extrair o ano de uma data:
 select extract(year from '2015-01-01');
+/*
 +---------------------------------+
 | extract(year from '2015-01-01') |
 +---------------------------------+
 |                            2015 |
-+---------------------------------+
-1 row in set (0.00 sec)
++---------------------------------+*/
 
 -- Extrair o último dia do mês:
 select last_day('2015-02-01');
+/*
 +------------------------+
 | last_day('2015-02-01') |
 +------------------------+
 |             2015-02-28 |
-+------------------------+
-1 row in set (0.00 sec)
++------------------------+*/
 
 -- Formatando datas
 
 -- Um padrão de data que utilizaremos bastante é o EUR
 -- (DD.MM.YYYY), pois ele é parecido com o nosso.
 select date_format('2015-01-10',get_format(date,'EUR'));
+/*
 +--------------------------------------------------+
 | date_format('2015-01-01',get_format(date,'EUR')) |
 +--------------------------------------------------+
-| 10.01.2015 |
-+--------------------------------------------------+
-1 row in set (0.00 sec)
+|                                       10.01.2015 |
++--------------------------------------------------+*/
 
 -- Você pode deparar-se com situações nas quais, por exemplo
 -- tem de fazer uma migração de dados para o seu banco MySQL,
@@ -1082,15 +1063,11 @@ select date_format('2015-01-10',get_format(date,'EUR'));
 -- converter de texto para data, utilizaremos a função str_to_date
 -- e, em seguida, passaremos para o nosso formato. Veja o exemplo:
 select str_to_date('01.01.2015',get_format(date,'USA'));
+/*
 +--------------------------------------------------+
 | str_to_date('01.01.2015',get_format(date,'USA')) |
 +--------------------------------------------------+
 |                                       2015-01-01 |
-+--------------------------------------------------+
-1 row in set (0.00 sec)
++--------------------------------------------------+*/
 
-
--- continue [pag. 98]
-
--- CAPITULO 7: 
--- DEIXAR O BANCO PROCESSAR: PROCEDURES E FUNCTIONS
+-- continue [file procedures.sql]
