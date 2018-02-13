@@ -106,3 +106,178 @@ CREATE TABLE comivenda(
     n_descivenda float(10,2),
     PRIMARY KEY(n_numeivenda)
 );
+
+-- CUIDANDO DA INTEGRIDADE DO BANCO DE DADOS
+
+-- Quando criamos a tabela comvenda , nós incluímos colunas de outras tabelas, como:
+-- n_numeclien , n_numeforne e n_numeprodu. 
+-- Essas colunas estão referenciando um registro em sua tabela de origem. 
+-- Porém, como apenas criamos o campo, mas nada que informe o banco sobre essa referência, 
+-- devemos fazer isso, passando uma instrução ao nosso SGBD por meio das constraints , 
+-- como mostram os códigos na sequência.
+
+ALTER TABLE comvenda ADD CONSTRAINT fk_comvenda_comforne
+    foreign key(n_numeforne)
+    references comforne(n_numeforne)
+on delete no action
+on update no action;
+
+ALTER TABLE comvenda ADD CONSTRAINT fk_comvenda_comvende
+    foreign key(n_numevende)
+    references comvende(n_numevende)
+on delete no action
+on update no action;
+
+ALTER TABLE comvenda ADD CONSTRAINT fk_comvenda_comclien
+    foreign key(n_numeclien)
+    references comclien(n_numeclien)
+on delete no action
+on update no action;
+
+ALTER TABLE comivenda ADD CONSTRAINT fk_comivenda_comprodu
+    foreign key(n_numeprodu)
+    references comprodu(n_numeprodu)
+on delete no action
+on update no action;
+
+ALTER TABLE comivenda ADD CONSTRAINT fk_comivenda_comvenda
+    foreign key(n_numevenda)
+    references comvenda(n_numevenda)
+on delete no action
+on update no action;
+
+-- Se tivéssemos criado uma constraint errada, poderíamos
+-- deletá-la utilizando a instrução irreversível:
+ALTER TABLE comivenda drop foreign key fk_comivenda_comprodu;
+
+-- ALTERANDO AS TABELAS
+
+-- Se você reparar em nossa tabela de clientes, não criamos campos para cidade ou para estados. 
+-- Para não precisar excluí-la e criá-la novamente, fazemos uma alteração nela com o comando alter table
+ALTER TABLE comclien add column c_cidaclien varchar(50);
+
+-- E um campo para informar o estado.
+ALTER TABLE comclien add column c_estaclien varchar(50);
+
+-- DELETAR COLUNA
+ALTER TABLE comclien drop column c_estaclien;
+
+-- MODIFICAR TIPO DO CAMPO (usar o modify)
+ALTER TABLE comclien modify column c_estaclien int;
+ALTER TABLE comclien modify column c_estaclien varchar(100);
+
+-- DELETAR TABELAS
+drop table comvendas;
+
+-- continua [pag. 46]
+
+-- CAPITULO 4 MANIPULANDO REGISTROS
+
+-- INSERINDO REGISTROS
+INSERT INTO comclien VALUES (
+1,
+'0001',
+'AARONSON',
+'AARONSON FURNITURE LTDA',
+'2015-02-17',
+'17.807.928/0001-85',
+'(21) 8167-6584',
+'QUEIMADOS',
+'RJ');
+
+insert into comclien(n_numeclien,
+                    c_codiclien,
+                    c_nomeclien,
+                    c_razaclien,
+                    d_dataclien,
+                    c_cnpjclien,
+                    c_foneclien,
+                    c_cidaclien,
+                    c_estaclien)
+values (1,
+        '0001',
+        'AARONSON',
+        'AARONSON FURNITURE LTDA',
+        '2015-02-17',
+        '17.807.928/0001-85',
+        '(21) 8167-6584',
+        'QUEIMADOS',
+        'RJ');
+        
+-- ALTERANDO REGISTROS : COMMAND UPDATE
+UPDATE comclien SET c_nomeclien = 'AARONSON FURNITURE' WHERE n_numeclien = 1;
+
+-- Podemos atualizar mais de um campo de uma vez só, separando com ',' :
+UPDATE comclien SET 
+            c_nomeclien = 'AARONSON FURNITURE', 
+            c_cidaclien = 'LONDRINA', 
+            c_estaclien = 'PR'
+        WHERE n_numeclien = 1;
+
+commit;
+
+-- Utilizei o commit para dizer para o SGBD que ele pode realmente 
+-- salvar a alteração do registro. Se, por engano, fizermos o update 
+-- incorreto, antes do commit , podemos reverter a situação usando a 
+-- instrução SQL rollback , da seguinte maneira:
+UPDATE comclien SET c_nomeclien = 'AARONSON'
+        WHERE n_numeclien = 1;
+rollback;
+
+-- Com isso, o nosso SGBD vai reverter a última instrução.
+
+-- Porém, se tiver a intenção de utilizar o rollback , faça-o antes de
+-- aplicar o commit , pois se você aplicar o update ou qualquer
+-- outro comando que necessite do commit , não será possível
+-- reverter.
+
+-- EXCLUINDO REGISTROS
+-- Para isso, devemos utilizar uma outra instrução SQL: o delete . 
+-- Diferente do drop , ele deleta os registros das colunas do banco de dados. 
+-- O drop é usado para excluir objetos do banco, como tabelas, colunas, views, procedures etc.); 
+-- enquanto, o delete deletará os registros das tabelas, podendo excluir apenas
+-- uma linha ou todos os registros, como você desejar.
+
+DELETE FROM comclien WHERE n_numeclien = 1;
+commit;
+
+-- Deletar todos os registros da tabela de clientes.
+DELETE FROM comclien;
+commit;
+
+-- CLAUSULA : TRUNCATE
+-- Além do delete , podemos fazer a deleção de dados usando
+-- uma instrução SQL chamada de truncate . 
+-- Este é um comando que não necessita de commit e não é possível a utilização de cláusulas where . 
+-- Logo, só o use se você tem certeza do que estiver querendo excluir, uma vez que ele é irreversível. 
+-- Nem o rollback pode reverter a operação. Isso ocorre porque, quando você utiliza o delete , 
+-- o SGBD salva os seus dados em uma tabela temporária e, quando aplicamos o rollback , 
+-- ele retorna a consulta e restaura os dados. 
+-- Já o truncate não a utiliza, o SGBD faz a deleção direta. 
+-- Para usar esse comando, faça do seguinte modo:
+truncate table comclien;
+
+-- continue [pag. 53]
+
+-- CAPITULO 5 TEMOS REGISTROS: VAMOS CONSULTAR?
+
+-- Estrutura básica da consulta
+SELECT * FROM comclien;
+
+-- Se quiséssemos selecionar apenas o código e a razão social do
+-- cliente, no lugar do * , colocaríamos os campos n_numeclien ,
+-- c_codiclien e c_razaclien .
+SELECT n_numeclien, c_codivenda, c_razaclien FROM comclien;
+
+-- Vamos selecionar o cliente com uma cláusula que deve ter c_codiclien = '00001'
+SELECT n_numeclien, c_codiclien, c_razaclien
+    FROM comclien
+WHERE c_codiclien = '0001';
+
+-- E se quiséssemos o contrário? 
+-- Todos os clientes que sejam diferentes de '0001' ? 
+-- Faríamos uma consulta utilizando o operador do MySQL que significa diferente: <> . 
+-- Ficaria assim:
+SELECT n_numeclien, c_codiclien, c_razaclien
+    FROM comclien
+WHERE c_codiclien <> '0001';
