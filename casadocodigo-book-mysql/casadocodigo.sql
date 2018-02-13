@@ -895,3 +895,160 @@ SELECT
     TRUNCATE(MAX(n_totavenda), 0) maior_venda
 FROM
     comvenda;
+/*
++-------------+
+| maior_venda |
++-------------+
+|       25141 |
++-------------+*/
+
+-- Dependendo da situação com que você está lidando, você
+-- poderá deixar alguma casa decimal. Basta substituir o número zero
+-- pelo número de casas decimais que deseja truncar.
+
+SELECT 
+    TRUNCATE(min(n_totavenda),1) menor_venda
+FROM 
+    comvenda;
+/*
++-------------+
+| menor_venda |
++-------------+
+|      4650.6 |
++-------------+*/
+
+-- Sqrt()
+-- raiz quadrada
+select sqrt(4);
+/*
++---------+
+| sqrt(4) |
++---------+
+|       2 |
++---------+*/
+
+-- Funções: seno, cosseno e tangente
+select pi();
+select sin(pi());
+select cos(pi());
+select tan(pi()+1);
+
+-- 6.5 OPERADORES ARITMÉTICOS
+
+-- multiplicação: calculando o valor total de um item
+SELECT 
+    (n_qtdeivenda * n_valoivenda) multiplicação
+FROM
+    comivenda
+where n_numeivenda = 4;
+/*
++-----------------+
+| multiplicação   |
++-----------------+
+| 41038.72        |
++-----------------+*/
+
+-- Somar todos os valores de produtos dos itens das vendas e dividir pelo número de itens vendidos
+SELECT 
+    TRUNCATE((SUM(n_valoivenda) / COUNT(n_numeivenda)),
+        2) divisão
+FROM
+    comivenda;
+    
+-- 6.6 FUNÇÕES DE DATA
+
+-- CURDATE() : para retornar a data atual, somente.
+-- NOW(): data e hora atual
+-- SYSDATE() : igual ao now()
+-- CURTIME() para retornar somente o horário atual.
+SELECT curdate(); 
+/*
++------------+
+|  curdate() |
++------------+
+| 2015-03-03 |
++------------+*/
+
+select now();
+/*
++---------------------+
+|       now()         |
++---------------------+
+| 2015-03-03 13:03:11 |
++---------------------+*/
+
+select curtime();
+/*
++-----------+
+| curtime() |
++-----------+
+| 12:56:36 |
++-----------+*/
+
+-- Podemos também retornar o intervalo entre duas datas:
+select datediff('2015-02-01 23:59:59','2015-01-01');
+/*
++----------------------------------------------+
+| datediff('2015-02-01 23:59:59','2015-01-01') |
++----------------------------------------------+
+|                                           31 |
++----------------------------------------------+*/
+
+-- E adicionar dias a uma data:
+select date_add('2013-01-01', interval 31 day);
+/*
++-----------------------------------------+
+| date_add('2013-01-01', interval 31 day) |
++-----------------------------------------+
+|                              2013-02-01 |
++-----------------------------------------+*/
+
+-- A função de selecionar o nome do dia da semana é muito útil.
+-- Você retornará o nome do dia da semana em vez de apenas a data
+-- com números, na tela para o seu usuário.
+select dayname('2015-01-01');
+/*
++-----------------------+
+| dayname('2015-01-01') |
++-----------------------+
+|              thursday |
++-----------------------+*/
+
+-- Para retornar o dia do mês:
+select dayofmonth('2015-01-01');
+/*
++--------------------------+
+| dayofmonth('2015-01-01') |
++--------------------------+
+|                        1 |
++--------------------------+*/
+
+-- Extrair o ano de uma data:
+select extract(year from '2015-01-01');
+/*
++---------------------------------+
+| extract(year from '2015-01-01') |
++---------------------------------+
+|                            2015 |
++---------------------------------+*/
+
+-- Extrair o último dia do mês:
+select last_day('2015-02-01');
+/*
++------------------------+
+| last_day('2015-02-01') |
++------------------------+
+|             2015-02-28 |
++------------------------+*/
+
+-- Formatando datas
+
+-- Um padrão de data que utilizaremos bastante é o EUR
+-- (DD.MM.YYYY), pois ele é parecido com o nosso.
+select date_format('2015-01-10',get_format(date,'EUR'));
+/*
++--------------------------------------------------+
+| date_format('2015-01-01',get_format(date,'EUR')) |
++--------------------------------------------------+
+|                                       10.01.2015 |
++--------------------------------------------------+*/
