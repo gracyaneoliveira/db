@@ -304,3 +304,158 @@ WHERE c_codiclien <> '0001';
 SELECT n_numeclien, c_codiclien, c_razaclien
     FROM comclien
 WHERE c_razaclien LIKE 'L%';
+
+-- O símbolo de % (porcento) é um curinga no SQL. 
+-- Quando não sabemos uma parte da string, podemos utilizá-lo no início, no
+-- meio ou no fim dela.
+
+-- DISTINCT
+-- Peguemos uma lista de todos os clientes que compraram algo? 
+-- Se fosse apenas a consulta:
+SELECT n_numeclien FROM comvenda;
+
+-- Isso retornaria lista de clientes e de vendas e, se o cliente
+-- possuir mais de uma venda, apareceria repetido no resultado.
+
+-- Para não selecionar um registro igual ao outro, utilizamos o DISTINCT .
+-- Com o seguinte código, teremos a lista de clientes que fizeram ao
+-- menos uma compra e sem nenhuma repetição.
+SELECT DISTINCT n_numeclien FROM comvenda;
+
+-- 5.2 SUBQUERY OU SUBCONSULTA
+-- As subconsultas são alternativas para as joins , que vamos
+-- ver logo a seguir. Utilizando-as, conseguimos ter um select
+-- dentro de outro select para nos ajudar a recuperar registros que
+-- estão referenciados em outras tabelas.
+
+-- Antes de demonstrar o uso da subquery, vamos aprender a
+-- utilização das cláusulas IN , NOT IN , EXISTS e NOT EXISTS
+
+-- Cláusulas IN e NOT IN
+-- As cláusulas IN e NOT IN surgem para fornecer apoio quando queremos testar um ou mais.
+
+-- Para exemplificarmos, vamos escrever uma consulta para retornar simultaneamente 
+-- os clientes que possuem n_numeclien igual a 1 e 2.
+SELECT c_codiclien, c_razaclien
+    FROM comclien
+WHERE n_numeclien IN (1,2);
+
+/*
++-------------+------------------------+
+| c_codiclien | c_razaclien            |
++-------------+------------------------+
+| 0001        | AARONSON FURNITURE LTD |
+| 0002        | LITTLER LTDA           |
++-------------+------------------------+ */
+-- Ou podíamos consultar clientes que possuem o n_numeclien
+-- diferente de 1 e 2. Nesta ocasião, devemos utilizar o NOT IN . Vamos ao código.
+SELECT c_codiclien, c_razaclien
+    FROM comclien
+WHERE n_numeclien NOT IN (1,2);
+/*
++-------------+-----------------------+
+| c_codiclien | c_razaclien           |
++-------------+-----------------------+
+| 0003        | KELSEY NEIGHBOURHOOD  | 
+| 0004        | GREAT AMERICAN MUSIC  |
+| 0005        | LIFE PLAN COUNSELLING |
+| 0006        | PRACTI-PLAN LTDA      |
+| 0007        | SPORTSWEST LTDA       |
+| 0008        | HUGHES MARKETS LTDA   |
+| 0009        | AUTO WORKS LTDA       |
+| 00010       | DAHLKEMPER LTDA       |
++-------------+-----------------------+*/
+
+-- Nas duas últimas consultas, nós sabíamos os números dos
+-- clientes que queríamos ou não consultar. 
+-- Entretanto, em nosso projeto, surgiu a necessidade de criar uma consulta para retornar a razão
+-- social dos clientes que possuem registro na tabela comvenda . 
+-- Para esta situação, vamos utilizar uma subconsulta.
+SELECT c_razaclien
+    FROM comclien
+WHERE n_numeclien IN (SELECT DISTINCT n_numeclien FROM comvenda);
+/*
++------------------------+
+| c_razaclien            |
++------------------------+
+| AARONSON FURNITURE LTD |
+| AUTO WORKS LTDA        |
+| GREAT AMERICAN MUSIC   |
+| HUGHES MARKETS LTDA    |
+| KELSEY NEIGHBOURHOOD   |
+| LIFE PLAN COUNSELLING  |
+| LITTLER LTDA           |
+| PRACTI-PLAN LTDA       |
+| SPORTSWEST LTDA        |
++------------------------+*/
+
+-- Utilizando a mesma situação, vamos buscar os clientes que
+-- ainda não fizeram nenhuma venda. 
+-- Para isso, utilizaremos o NOT IN . 
+-- Você verá que o único cliente que ainda não possui registro de
+-- venda retornará, pois a consulta principal vai consultar todos os
+-- registros que não possuem o n_numeclien na tabela comvenda .
+SELECT c_razaclien
+    FROM comclien
+WHERE n_numeclien NOT IN (SELECT n_numeclien FROM comvenda);
+
+-- +------------------+
+-- | c_razaclien      |
+-- +------------------+
+-- | DAHLKEMPER LTDA  |
+-- +------------------+
+
+-- vamos supor que, em nosso sistema, surgiu a necessidade de desenvolver uma
+-- consulta para retornar o código das vendas e a razão social dos
+-- respectivos clientes que as fizeram.
+    -- A consulta principal será um select na tabela comvenda
+    -- junto com uma subconsulta. Esta terá uma vírgula separando-a do
+    -- primeiro campo e o n_numeclien sendo passado da consulta
+    -- principal, para realizar a comparação e buscar a razão social do
+    -- respectivo cliente. 
+    -- Vamos ao código.
+        SELECT c_codivenda Cod_Venda,
+                                    (SELECT c_razaclien
+                                        FROM comclien
+                                    WHERE n_numeclien = comvenda.n_numeclien) Nome_Cliente
+        FROM comvenda;
+        /*
+        +-------------+------------------------+
+        | Cod_Venda | Nome_Cliente             |
+        +-------------+------------------------+
+        | 1         | AARONSON FURNITURE LTD   |
+        | 2         | LITTLER LTDA             |
+        | 3         | KELSEY NEIGHBOURHOOD     |
+        | 4         | GREAT AMERICAN MUSIC     |
+        | 5         | LIFE PLAN COUNSELLING    |
+        ...*/
+        
+-- Essa maneira não é muito usada, porque há perda de
+-- performance e o código não fica legal. 
+-- Por isso, aprenderemos a fazer JOINS: a forma correta para retornamos valores de uma ou
+-- mais tabelas em um único select .
+
+-- Criação de alias (apelidos das tabelas)
+-- Observe o nosso último código. No cabeçalho do resultado, em
+-- vez de retornar os nomes das colunas, apareceram os que
+-- colocamos na frente das que estamos consultando.
+-- Dizemos que estamos apelidando as colunas e isso é chamado de alias.
+
+-- Para exemplificar, vamos consultar a c_codiclien e a
+-- c_nomeclien , colocando os alias CODIGO e CLIENTE
+-- respectivamente. 
+-- Vamos ao código:
+SELECT c_codiclien CODIGO, c_nomeclien CLIENTE
+    FROM comclien
+WHERE n_numeclien NOT IN (1,2,3,4);
+/*
++-------------+-----------------------+
+| CODIGO      |      CLIENTE          |
++-------------+-----------------------+
+| 0005        | LIFE PLAN COUNSELLING |
+| 0006        | PRACTI-PLAN           |
+| 0007        | SPORTSWEST            |
+| 0008        | HUGHES MARKETS        |
+| 0009        | AUTO WORKS            |
+| 00010       | DAHLKEMPER            |
++-------------+-----------------------+*/
