@@ -733,3 +733,165 @@ SELECT format(AVG(n_totavenda),2)
 +----------------------------+
 | 12,213.96                  |
 +----------------------------+*/
+
+
+-- 6.3 FUNÇÕES DE STRING
+
+-- substr() e length()
+
+-- Agora, em nosso projeto, surgiu a necessidade de consultar os
+-- produtos que iniciam seu código com '123' e que possuem uma
+-- descrição com mais de 4 caracteres, pois foram cadastrados de
+-- maneira errada.
+-- Existem funções no SQL que podemos utilizar para
+-- fazer esse filtro? 
+-- São duas: a função SUBSTR() e a length() .
+
+-- Diferente das outras funções para as quais apenas passamos a
+-- coluna, para esta devemos também passar qual o intervalo de
+-- caracteres que queremos de um determinado campo.
+
+-- Por exemplo, substr(c_codiprodu,1,3) = '123' . 
+-- Com este comando, falamos para o SGBD que queremos os registros
+-- que possuem o código da posição 1 até a posição 3 com a
+-- sequência de caracteres 123 . 
+-- Com a função LENGTH() , vamos contar quantos caracteres a descrição do produto tem.
+
+SELECT c_codiprodu, c_descprodu
+    FROM comprodu
+WHERE substr(c_codiprodu,1,3) = '123'
+    AND length(c_descprodu) > 4;
+/*
++-------------+-------------+
+| c_codiprodu | c_descprodu |
++-------------+-------------+
+| 123131      | NOTEBOOK    |
+| 123223      | SMARTPHONE  |
+| 1234        | DESKTOP     |
++-------------+-------------+*/
+
+-- Utilizamos, no exemplo, o substr() e o length() para
+-- fazermos uma validação. Poderíamos ter utilizado para apresentar
+-- os valores. 
+-- Vamos selecionar apenas os cinco primeiros caracteres
+-- do campo c_razaclien e contar quantos deles temos no código
+-- do cliente = 1. Vamos ao código:
+SELECT substr(c_razaclien,1,5) Razao_Social,
+       length(c_codiprodu) Tamanho_Cod
+    FROM comclien
+WHERE n_numeclien = 1;
+/*
++-------------+--------------+
+| Razao_Social | Tamanho_Cod |
++-------------+--------------+
+| AARON        | 6           |
++-------------+--------------+*/
+
+-- Concat() e concat_ws()
+
+-- Queremos agora listar os clientes concatenando a razão social e o telefone. 
+-- Temos a função concat() que concatena dois ou mais campos. 
+-- Deve-se apenas colocá-los entre parênteses, separados por vírgula.
+
+SELECT concat(c_razaforne,' - fone: ', c_foneforne)
+    FROM comforne
+ORDER BY c_razaforne;
+/*
++-------------------------------------------------------+
+| concat(c_razaforne,' - fone: ', c_foneforne)          |
++-------------------------------------------------------+
+| DUN RITE LAWN MAINTENANCE LTDA - fone: (85) 7886-8837 |
+| SEWFRO FABRICS LTDA - fone: (91) 5171-8483            |
+| WISE SOLUTIONS LTDA - fone: (11) 5347-5838            |
++-------------------------------------------------------+*/
+
+-- Por alguma necessidade, precisamos fazer consultas e
+-- concatenar mais de um campo. 
+-- O MySQl nos permite fazer isso através das funções concat() e concat_ws() . 
+
+-- Com o concat() será para concatenar todos os campos da consulta sem
+-- especificar um separador entre os campos; 
+-- Com o concat_ws() devemos dizer qual será o separador entre eles. 
+-- Vamos aos exemplos:
+
+SELECT
+    concat(c_codiclien,' ',c_razaclien, ' ', c_nomeclien)
+FROM comclien
+    WHERE c_razaclien LIKE 'GREA%';
+/*    
++---------------------------------------------------------+
+| concat(c_codiclien,' ',c_razaclien, ' ', c_nomeclien)   |
++---------------------------------------------------------+
+| 0004 GREAT AMERICAN MUSIC GREAT AMERICAN MUSIC          |
++---------------------------------------------------------+*/
+
+-- Olhando para o resultado, observe que nós separamos os
+-- campos com duplo espaço. 
+-- Poderíamos fazer isso utilizando algum caractere especial, como com ponto e vírgula ( ; ):
+
+SELECT
+    concat_ws(';',c_codiclien, c_razaclien, c_nomeclien)
+FROM comclien
+    WHERE c_razaclien LIKE 'GREA%';
+/*
++------------------------------------------------------+
+| concat_ws(';',c_codiclien, c_razaclien, c_nomeclien) |
++------------------------------------------------------+
+| 0004;GREAT AMERICAN MUSIC;GREAT AMERICAN MUSIC       |
++------------------------------------------------------+*/
+
+-- Observe que agora apenas declaramos qual o separador
+-- queríamos e o SGBD colocou-o entre os campos.
+
+-- Lcase() e lower()
+-- Se você fizer uma consulta em nosso banco, vai perceber que
+-- alguns registros estão em letras maiúsculas. Se você necessitar, em
+-- algum lugar de sua aplicação, dos registros em letras minúsculas, o
+-- MySQL também tem uma função para auxiliá-lo. 
+-- Utilize o lcase ou o lower da seguinte maneira:
+
+SELECT lcase(c_razaclien)
+    FROM comclien;
+/*
++------------------------+
+| lcase(c_razaclien)     |
++------------------------+
+| aaronson furniture ltd |
+| auto works ltda        |
+| dahlkemper ltda        |
+...*/
+
+-- Ucase()
+
+-- Da mesma maneira que podemos retornar os registros de
+-- forma minúscula, podemos também de forma maiúscula. Utilize a
+-- função ucase .
+SELECT ucase('banco de dados mysql')
+    FROM DUAL;
+/*
++-------------------------------+
+| ucase('banco de dados mysql') |
++-------------------------------+
+| BANCO DE DADOS MYSQL          |
++-------------------------------+*/
+
+
+-- continue [pag. 86]
+
+-- 6.4 FUNÇÕES DE CÁLCULOS E OPERADORES ARITMÉTICOS
+
+-- Round
+SELECT ROUND('21123.142', 2) FROM DUAL;
+/*
++-----------------------+
+| format('21123.142',2) |
++-----------------------+
+| 21123.14              |
++-----------------------+*/
+
+-- Truncate
+-- Temos a opção de utilizar uma função que vai truncar as casas decimais, ou seja, omiti-las.
+SELECT 
+    TRUNCATE(MAX(n_totavenda), 0) maior_venda
+FROM
+    comvenda;
