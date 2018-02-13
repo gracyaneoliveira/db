@@ -95,8 +95,8 @@ mysql>create procedure processa_comissionamento(
 					where n_numevenda = venda;
 					commit;
 				
-				## se ele não possuir registro no percentual de 
-			    ## comissão ele irá ganhar 1 de comissão
+				## se ele não possuir registro no percentual de
+                ## comissão ele irá ganhar 1 de comissão
 				## isso pela regra de negócio do nosso sistema
 				else 
 					set comissao = 1;

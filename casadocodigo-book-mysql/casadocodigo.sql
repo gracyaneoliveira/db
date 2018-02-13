@@ -1,11 +1,10 @@
--- https://github.com/viniciuscdes/mysqlbook
 -- CAPITULO 1
-    -- configurando o mysql
+-- configurando o mysql
     
 -- CAPITULO 2
 -- Criando um Novo Usuario:
-    -- nome: usermysql
-    -- senha: cursomysql
+-- nome: usermysql
+-- senha: cursomysql
 CREATE USER usermysql@'%' identified by 'cursomysql';
 CREATE USER usermysql@'localhost' identified by 'cursomysql';
 
