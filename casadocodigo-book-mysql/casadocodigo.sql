@@ -959,6 +959,7 @@ FROM
 
 -- CURDATE - para retornar a data atual, somente
 -- NOW - data e hora atual
+-- SYSDATE
 -- CURTIME - para retornar somente o horário atual
 
 SELECT curdate(); 
