@@ -130,3 +130,123 @@ mysql>delimiter ;
 
 mysql> call processa_comissionamento('2015-01-01','2015-05-30' ,@a);
 mysql> select @a;
+
+
+-- 7.2 PROCESSANDO E RETORNANDO COM FUNCTIONS
+
+-- Se você quiser criar algo para ter algum retorno, aconselho a
+-- utilização de uma function , pois poderemos utilizá-las no meio
+-- de uma consulta, ao contrário da procedure , que temos que
+-- executar com um comando específico.
+
+-- Vamos criar uma function para retornar o nome do cliente.
+
+mysql>delimiter $$
+mysql>create function rt_nome_cliente(vn_numeclien int)
+        returns varchar(50) 
+
+        begin
+            declare nome varchar(50);
+            
+            select c_nomeclien into nome
+                from comclien
+            where n_numeclien = vn_numeclien;
+            
+            return nome;
+        end $$
+
+mysql> delimiter ;
+
+mysql> ## estou passando como parâmetro o id do cliente igual a 1
+mysql> select rt_nome_cliente(1);
+
+
+mysql> ##irei retornar o código da venda, nome do cliente e a
+mysql> ##data da venda ordenando pelo nome e em seguida pela data
+mysql> select c_codivenda,
+              rt_nome_cliente(n_numeclien),
+              d_datavenda
+            from comvenda
+        order by 2,3;
+        
+-- 7.4 AUTOMATIZANDO O PROCESSO ATRAVÉS DE EVENT SCHEDULER
+
+-- Vamos programar a procedure processa_comissionamento para executar uma vez por semana.
+-- Por isso, utilizaremos on schedule every 1 week , que vai
+-- executar a primeira vez no dia '2015-03-01' ás 23:00 horas.
+-- Primeiro, devemos habilitar o event_scheduler em nosso
+-- SGBD, pois, por padrão, ele fica desabilitado. 
+
+-- Abra o prompt e digite o comando:
+
+mysql> set global event_scheduler = on;
+
+mysql> delimiter $$
+mysql> create event processa_comissao
+       on schedule every 1 week starts '2015-03-01 23:38:00'
+       do
+        begin
+            call processa_comissionamento(
+                current_date() - interval 7 day,
+                current_date(), @a );
+        end
+mysql> $$
+mysql> delimiter ;
+
+-- Para vermos o resultado, vamos consultar as vendas desse período.
+mysql> select c_codivenda Codigo,
+              n_totavenda Total,
+              n_vcomvenda Comissao
+         from comvenda
+        where
+            d_datavenda between current_date() - interval 60 day
+            and current_date();
+            
++--------+----------+----------+
+| Codigo |    Total | Comissao |
++--------+----------+----------+
+|      2 | 12476.58 |  1743.99 |
+|      3 | 16257.32 |     0.00 |
+|      4 |  8704.55 |     0.00 |
+|      6 |  6079.19 |     0.00 |
+|      7 |  7451.26 |     0.00 |
+...
+
+-- Eventos com outras periodicidades, entre elas:
+on schedule every 1 year: uma vez por ano;
+on schedule every 1 month: uma vez por mês;
+on schedule every 1 day: uma vez ao dia;
+on schedule every 1 hour: uma vez por hora;
+on schedule every 1 minute: uma vez por minuto;
+on schedule every 1 second: uma vez por segundo.
+
+
+-- Além de escolher quando ela começará, você também pode decidir quando parará de executar. 
+-- Para exemplificar, vamos criar um evento para iniciar a nossa procedure a cada 10 minutos e
+-- parar depois de uma hora.
+
+mysql> delimiter $$
+mysql> create event processa_comissao_event
+        on schedule every 10 minute
+        starts current_timestamp
+        ends current_timestamp + interval 30 minute
+        do
+            begin
+                call processa_comissionamento(
+                     current_date() - interval 7 day,
+                     current_date(),
+                     @a);
+            end
+mysql> $$
+mysql> delimiter ;
+
+-- Ao criar um evento, ele fica habilitado automaticamente. Pode
+-- acontecer que, depois de um período, você não queira mais que o
+-- processo execute maquinalmente. Em vez de excluí-lo, você pode
+-- apenas desabilitá-lo com o seguinte comando:
+
+mysql> alter event processa_comissao_event disable;
+
+-- E para habilitá-lo novamente:
+
+mysql> alter event processa_comissao_event enable;
